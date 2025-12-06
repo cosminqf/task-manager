@@ -1,7 +1,5 @@
 # task-manager
-================================================================================
 PLANIFICARE PROIECT: PLATFORMA TASK MANAGEMENT (ASP.NET Core MVC)
-================================================================================
 
 INSTRUCȚIUNI GENERALE:
 - Fiecare membru implementează funcționalitățile cap-coadă (Database -> Model -> Controller -> View).
@@ -17,10 +15,8 @@ INSTRUCȚIUNI GENERALE:
     - Seed Data: Fiecare își scrie seed-ul pentru partea sa.
     - README: Fiecare documentează modulele implementate.
 
-================================================================================
-MEMBRU 1: INFRASTRUCTURĂ, ADMINISTRARE & AI
+COSMIN: INFRASTRUCTURĂ, ADMINISTRARE & AI
 (Focus: Useri, Proiecte, Echipe, Rapoarte)
-================================================================================
 
 1. Autentificare & Roluri (Req 1)
    [Backend] Configurare ASP.NET Identity.
@@ -52,10 +48,8 @@ MEMBRU 1: INFRASTRUCTURĂ, ADMINISTRARE & AI
    [Frontend] Tabel cu toți userii (ban/delete).
    [Frontend] Tabel cu toate proiectele (delete forțat dacă e conținut inadecvat).
 
-================================================================================
-MEMBRU 2: WORKFLOW, TASK-URI & DASHBOARD
+ANDREI: WORKFLOW, TASK-URI & DASHBOARD
 (Focus: Task-uri, Interacțiune, Media, User Experience)
-================================================================================
 
 1. Gestionarea Task-urilor (Req 5)
    [Entitate] `Task` (Id, Title, Description, Status, StartDate, EndDate, MediaUrl, ProjectId).
@@ -85,22 +79,20 @@ MEMBRU 2: WORKFLOW, TASK-URI & DASHBOARD
        - Listă clară cu task-urile mele, colorate în funcție de urgență.
        - Filtre (Butoane: "Arată doar Finalizate", "Arată Urgente").
 
-================================================================================
 SUGESTIE ORDINE DE LUCRU (SINCRONIZARE)
-================================================================================
 Săptămâna 1:
-- Membru 1: Setup Identity + Proiecte (CRUD).
-- Membru 2: Setup Task-uri (CRUD simplu, fără asignare încă).
+- COSMIN: Setup Identity + Proiecte (CRUD).
+- ANDREI: Setup Task-uri (CRUD simplu, fără asignare încă).
 
 Săptămâna 2:
-- Membru 1: Implementează Echipe (adaugă useri în proiecte).
-- Membru 2: Leagă Task-urile de Useri (Assign) și face Upload Media.
+- COSMIN: Implementează Echipe (adaugă useri în proiecte).
+- ANDREI: Leagă Task-urile de Useri (Assign) și face Upload Media.
 
 Săptămâna 3:
-- Membru 1: Implementează AI Summary (acum are date reale din task-uri).
-- Membru 2: Implementează Comentarii și Dashboard-ul personal.
+- COSMIN: Implementează AI Summary (acum are date reale din task-uri).
+- ANDREI: Implementează Comentarii și Dashboard-ul personal.
 
 Săptămâna 4:
-- Membru 1: Admin Panel.
-- Membru 2: Finalizare UI/UX Dashboard.
+- COSMIN: Admin Panel.
+- ANDREI: Finalizare UI/UX Dashboard.
 - Ambii: Seed data final, verificări, README.
