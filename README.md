@@ -1,4 +1,9 @@
 # task-manager
+
+Raport proiect: https://1drv.ms/w/c/ec17cb32d958e7ed/IQD7JlvuI5tzSqoNSPv3qD80AVd1UzOkv_TOvM_o8b0_N18?e=ihc8Yf
+
+Board Trello: https://trello.com/invite/b/69133955d10c9b794cc4851e/ATTI0e9c64b8393e10c849a8971575f84508192C5ED2/taskmanager
+
 PLANIFICARE PROIECT: PLATFORMA TASK MANAGEMENT (ASP.NET Core MVC)
 
 INSTRUCȚIUNI GENERALE:
