@@ -1,8 +1,53 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="px-4 py-5 my-5 text-center bg-light rounded-3 shadow-sm">
+    <h1 class="display-5 fw-bold text-primary">Organizeaza-ti viata cu TaskManager</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">
+            Gestioneaza proiecte, urmareste progresul si colaboreaza cu echipa ta intr-un singur loc.
+            Simplu, rapid si eficient.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-4 gap-3">Incepe Gratuit</a>
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary btn-lg px-4">Am deja cont</a>
+        </div>
+    </div>
+</div>
+
+<div class="container px-4 py-5" id="features">
+    <h2 class="pb-2 border-bottom text-center">De ce sa alegi TaskManager?</h2>
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+
+        <div class="col d-flex align-items-start">
+            <div class="icon-square bg-light text-dark flex-shrink-0 me-3 rounded p-2">
+                📂
+            </div>
+            <div>
+                <h3 class="fs-2">Proiecte Nelimitate</h3>
+                <p>Creeaza cate proiecte vrei si organizeaza task-urile pe categorii.</p>
+            </div>
+        </div>
+
+        <div class="col d-flex align-items-start">
+            <div class="icon-square bg-light text-dark flex-shrink-0 me-3 rounded p-2">
+                🚀
+            </div>
+            <div>
+                <h3 class="fs-2">Productivitate Maxima</h3>
+                <p>Urmarestre statusul fiecarui task (To Do, In Progress, Done) in real-time.</p>
+            </div>
+        </div>
+
+        <div class="col d-flex align-items-start">
+            <div class="icon-square bg-light text-dark flex-shrink-0 me-3 rounded p-2">
+                🔒
+            </div>
+            <div>
+                <h3 class="fs-2">Securitate</h3>
+                <p>Datele tale sunt protejate. Doar tu ai acces la proiectele tale personale.</p>
+            </div>
+        </div>
+    </div>
 </div>
