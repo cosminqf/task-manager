@@ -11,6 +11,8 @@ services:
       - ./:/src
       - nugetstorevolume:/root/.nuget/packages
       - dotnet-toolsstorevolume:/root/.dotnet/tools
+      - /src/TaskManager/bin
+      - /src/TaskManager/obj
     # nu pornește by default; îl chemăm punctual cu `docker compose run`
 
   # 2) App runner — rulează aplicația cu hot-reload
@@ -33,7 +35,7 @@ services:
       - nugetstorevolume:/root/.nuget/packages
       - dotnet-toolsstorevolume:/root/.dotnet/tools
     # după ce generăm proiectul, setăm directorul de lucru în subfolderul proiectului
-    working_dir: /src/${DOCKER_PROJECT_NAME:-DockerProject}
+    working_dir: /src/${DOCKER_PROJECT_NAME:-TaskManager}
     command: ["sh", "-c", "export PATH=/root/.dotnet/tools:$$PATH && dotnet watch --non-interactive run --urls http://0.0.0.0:8080"]
     networks: [appnet]
 
