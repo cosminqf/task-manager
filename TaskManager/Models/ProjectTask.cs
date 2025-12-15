@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TaskManager.Areas.Identity.Data;
 
 namespace TaskManager.Models;
 
@@ -41,6 +42,9 @@ public class ProjectTask : IValidatableObject
     [Display(Name = "Media URL")]
     [StringLength(500, ErrorMessage = "URL-ul media nu poate depăși 500 de caractere")]
     public string? MediaUrl { get; set; }
+
+    
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

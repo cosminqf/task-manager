@@ -17,7 +17,11 @@ namespace TaskManager.Controllers
         [HttpGet]
         public async Task<IActionResult> Show(int id)
         {
-            var task = await db.ProjectTasks.FirstOrDefaultAsync(t => t.Id == id);
+            var task = await db.ProjectTasks
+                               .Include(t => t.Comments) // <--- INCLUDE COMENTARIILE
+                               .ThenInclude(c => c.User) // <--- INCLUDE AUTORUL COMENTARIULUI
+                               .FirstOrDefaultAsync(t => t.Id == id);
+
             if (task == null) return NotFound();
 
             return View(task);
