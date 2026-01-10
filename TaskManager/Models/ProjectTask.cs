@@ -43,7 +43,20 @@ public class ProjectTask : IValidatableObject
     [StringLength(500, ErrorMessage = "URL-ul media nu poate depăși 500 de caractere")]
     public string? MediaUrl { get; set; }
 
-    
+
+    [Display(Name = "Postat de")]
+    public string? AssignedUserId { get; set; }
+
+    [ForeignKey("AssignedUserId")]
+    public virtual ApplicationUser? AssignedUser { get; set; }
+
+    [Display(Name = "Proiect")]
+    public int? ProjectId { get; set; }
+
+    // [ForeignKey("ProjectId")]
+    // public virtual Project? Project { get; set; } 
+
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

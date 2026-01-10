@@ -21,3 +21,5 @@ Thumbs.db
 task-manager.sln
 
 TaskManager/wwwroot/images/
+
+.config/

@@ -1,5 +1,7 @@
-﻿@{
-    ViewData["Title"] = "Dashboard";
+﻿@model List<TaskManager.Models.ProjectTask>
+
+@{
+    ViewData["Title"] = "My Dashboard";
 }
 
 @section Styles {
@@ -10,10 +12,11 @@
     <div class="dashboard-header">
         <div class="welcome-section">
             <h1>👋 Salut, @User.Identity?.Name!</h1>
-            <p class="lead">Bine ai venit în panoul tău de control.</p>
+            <p class="lead">Aici sunt task-urile tale personale.</p>
         </div>
     </div>
 
+    <!-- Statistici -->
     <div class="row g-4 mt-4">
         <div class="col-md-6 col-lg-3">
             <div class="dashboard-card">
@@ -21,26 +24,9 @@
                     <i class="bi bi-list-task"></i>
                 </div>
                 <div class="dashboard-card-body">
-                    <h5>Task-uri</h5>
-                    <p class="text-muted">Vizualizează și gestionează task-urile tale</p>
-                    <a asp-controller="Tasks" asp-action="Index" class="btn btn-primary-custom btn-action">
-                        <i class="bi bi-eye"></i> Vezi Task-uri
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="dashboard-card">
-                <div class="dashboard-card-icon bg-success">
-                    <i class="bi bi-kanban"></i>
-                </div>
-                <div class="dashboard-card-body">
-                    <h5>Proiecte</h5>
-                    <p class="text-muted">Gestionează proiectele tale</p>
-                    <a asp-controller="Projects" asp-action="Index" class="btn btn-success-custom btn-action">
-                        <i class="bi bi-folder"></i> Vezi Proiecte
-                    </a>
+                    <h5>Total Task-uri</h5>
+                    <h2 class="mb-0">@ViewBag.TotalTasks</h2>
+                    <p class="text-muted mb-0">Task-uri atribuite</p>
                 </div>
             </div>
         </div>
@@ -48,56 +34,133 @@
         <div class="col-md-6 col-lg-3">
             <div class="dashboard-card">
                 <div class="dashboard-card-icon bg-warning">
-                    <i class="bi bi-plus-circle"></i>
+                    <i class="bi bi-hourglass-split"></i>
                 </div>
                 <div class="dashboard-card-body">
-                    <h5>Task Nou</h5>
-                    <p class="text-muted">Creează un task nou rapid</p>
-                    <a asp-controller="Tasks" asp-action="New" class="btn btn-warning-custom btn-action">
-                        <i class="bi bi-plus"></i> Adaugă Task
-                    </a>
+                    <h5>Task-uri Active</h5>
+                    <h2 class="mb-0">@ViewBag.ActiveTasks</h2>
+                    <p class="text-muted mb-0">În progres</p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-lg-3">
             <div class="dashboard-card">
-                <div class="dashboard-card-icon bg-info">
-                    <i class="bi bi-person-circle"></i>
+                <div class="dashboard-card-icon bg-success">
+                    <i class="bi bi-check-circle"></i>
                 </div>
                 <div class="dashboard-card-body">
-                    <h5>Profilul Meu</h5>
-                    <p class="text-muted">Setările contului tău</p>
-                    <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-secondary-custom btn-action">
-                        <i class="bi bi-gear"></i> Setări
-                    </a>
+                    <h5>Task-uri Finalizate</h5>
+                    <h2 class="mb-0">@ViewBag.CompletedTasks</h2>
+                    <p class="text-muted mb-0">Completate</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="dashboard-card">
+                <div class="dashboard-card-icon bg-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="dashboard-card-body">
+                    <h5>Task-uri Urgente</h5>
+                    <h2 class="mb-0">@ViewBag.UrgentTasks</h2>
+                    <p class="text-muted mb-0">Deadline &lt; 24h</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Filtre -->
     <div class="row mt-5">
         <div class="col-12">
-            <div class="info-card">
-                <div class="info-card-header">
-                    <i class="bi bi-info-circle"></i>
-                    <h4>Informații Rapide</h4>
+            <div class="d-flex gap-2 mb-4">
+                <a asp-action="Index" class="btn @(ViewBag.CurrentFilter == null ? "btn-primary" : "btn-outline-primary")">
+                    <i class="bi bi-list"></i> Toate
+                </a>
+                <a asp-action="Index" asp-route-filter="completed" class="btn @(ViewBag.CurrentFilter == "completed" ? "btn-success" : "btn-outline-success")">
+                    <i class="bi bi-check-circle"></i> Finalizate
+                </a>
+                <a asp-action="Index" asp-route-filter="urgent" class="btn @(ViewBag.CurrentFilter == "urgent" ? "btn-danger" : "btn-outline-danger")">
+                    <i class="bi bi-exclamation-triangle"></i> Urgente
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Task-uri -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3 class="mb-4">
+                <i class="bi bi-kanban"></i> Task-urile Mele
+            </h3>
+            
+            @if (Model.Count == 0)
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Nu ai task-uri atribuite momentan.
                 </div>
-                <div class="info-card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="stat-box">
-                                <i class="bi bi-clock-history"></i>
-                                <h3>Recent</h3>
-                                <p>Vezi activitatea ta recentă și task-urile active</p>
+            }
+            else
+            {
+                <div class="row g-4">
+                    @foreach (var task in Model)
+                    {
+                        var statusClass = task.Status switch
+                        {
+                            TaskManager.Models.TaskStatus.NotStarted => "border-secondary",
+                            TaskManager.Models.TaskStatus.InProgress => "border-warning",
+                            TaskManager.Models.TaskStatus.Completed => "border-success",
+                            _ => "border-secondary"
+                        };
+
+                        var isUrgent = task.EndDate <= DateTime.Now.AddDays(1) && task.Status != TaskManager.Models.TaskStatus.Completed;
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 @statusClass @(isUrgent ? "border-danger" : "")" style="border-width: 3px;">
+                                <div class="card-body">
+                                    @if (isUrgent)
+                                    {
+                                        <span class="badge bg-danger mb-2">
+                                            <i class="bi bi-exclamation-triangle"></i> URGENT
+                                        </span>
+                                    }
+                                    
+                                    <h5 class="card-title">@task.Title</h5>
+                                    <p class="card-text text-muted">@task.Description.Substring(0, Math.Min(80, task.Description.Length))...</p>
+                                    
+                                    <div class="mb-2">
+                                        <span class="badge @(task.Status switch {
+                                            TaskManager.Models.TaskStatus.NotStarted => "bg-secondary",
+                                            TaskManager.Models.TaskStatus.InProgress => "bg-warning text-dark",
+                                            TaskManager.Models.TaskStatus.Completed => "bg-success",
+                                            _ => "bg-secondary"
+                                        })">
+                                            @(task.Status switch {
+                                                TaskManager.Models.TaskStatus.NotStarted => "Neînceput",
+                                                TaskManager.Models.TaskStatus.InProgress => "În Progres",
+                                                TaskManager.Models.TaskStatus.Completed => "Finalizat",
+                                                _ => task.Status.ToString()
+                                            })
+                                        </span>
+                                    </div>
+                                    
+                                    <p class="small text-muted mb-3">
+                                        <i class="bi bi-calendar"></i> Termen: @task.EndDate.ToString("dd/MM/yyyy")
+                                    </p>
+                                    
+                                    <a asp-controller="Tasks" asp-action="Show" asp-route-id="@task.Id" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-eye"></i> Vezi Detalii
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="stat-box">
-                                <i class="bi bi-graph-up"></i>
-                                <h3>Progres</h3>
-                                <p>Monitorizează progresul proiectelor tale</p>
-                            </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-box">

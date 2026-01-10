@@ -1,16 +1,33 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using TaskManager.Areas.Identity.Data;
 using TaskManager.Data;
 using TaskManager.Models;
 
 namespace TaskManager.Controllers
 {
-    public class TasksController(ApplicationDbContext db, IWebHostEnvironment env) : Controller
+    public class TasksController : Controller
     {
+        private readonly ApplicationDbContext db;
+        private readonly IWebHostEnvironment env;
+        private readonly UserManager<ApplicationUser> userManager;
+
+        public TasksController(ApplicationDbContext db, IWebHostEnvironment env, UserManager<ApplicationUser> userManager)
+        {
+            this.db = db;
+            this.env = env;
+            this.userManager = userManager;
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var tasks = await db.ProjectTasks.OrderByDescending(t => t.StartDate).ToListAsync();
+            var tasks = await db.ProjectTasks
+                .Include(t => t.AssignedUser)
+                .OrderByDescending(t => t.StartDate)
+                .ToListAsync();
             return View(tasks);
         }
 
@@ -18,8 +35,8 @@ namespace TaskManager.Controllers
         public async Task<IActionResult> Show(int id)
         {
             var task = await db.ProjectTasks
-                               .Include(t => t.Comments) // <--- INCLUDE COMENTARIILE
-                               .ThenInclude(c => c.User) // <--- INCLUDE AUTORUL COMENTARIULUI
+                               .Include(t => t.Comments) 
+                               .ThenInclude(c => c.User) 
                                .FirstOrDefaultAsync(t => t.Id == id);
 
             if (task == null) return NotFound();
@@ -30,6 +47,8 @@ namespace TaskManager.Controllers
         [HttpGet]
         public IActionResult New()
         {
+            ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email");
+            
             ProjectTask task = new ProjectTask
             {
                 StartDate = DateTime.Now,
@@ -51,6 +70,8 @@ namespace TaskManager.Controllers
                 TempData["SuccessMessage"] = "Task creat cu succes!";
                 return RedirectToAction("Index"); 
             }
+            
+            ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email");
             return View(task);
         }
 
@@ -60,6 +81,7 @@ namespace TaskManager.Controllers
             var task = await db.ProjectTasks.FindAsync(id);
             if (task == null) return NotFound();
 
+            ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email", task.AssignedUserId);
             return View(task);
         }
 
@@ -76,6 +98,7 @@ namespace TaskManager.Controllers
                 existingTask.Status = requestTask.Status;
                 existingTask.StartDate = requestTask.StartDate;
                 existingTask.EndDate = requestTask.EndDate;
+                existingTask.AssignedUserId = requestTask.AssignedUserId;
                 
                 if (requestTask.TaskImage != null)
                 {
@@ -104,6 +127,7 @@ namespace TaskManager.Controllers
                 return RedirectToAction("Index");
             }
 
+            ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email", requestTask.AssignedUserId);
             return View(requestTask);
         }
 

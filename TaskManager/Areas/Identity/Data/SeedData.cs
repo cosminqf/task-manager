@@ -51,7 +51,7 @@ public static class SeedData
                     NormalizedEmail = "MEMBER@TEST.COM",
                     Email = "member@test.com",
                     NormalizedUserName = "MEMBER@TEST.COM",
-                    PasswordHash = hasher.HashPassword(null,"Member1!")
+                    PasswordHash = hasher.HashPassword(new ApplicationUser(), "Member1!")
                 }
             );
             context.UserRoles.AddRange(
@@ -71,7 +71,7 @@ public static class SeedData
                 }
             );
 
-            // Seed Tasks
+            // Seed Tasks - Atribuite utilizatorilor
             context.ProjectTasks.AddRange(
                 new ProjectTask
                 {
@@ -79,7 +79,8 @@ public static class SeedData
                     Description = "This is the first seeded task.",
                     Status = TaskManager.Models.TaskStatus.NotStarted,
                     StartDate = DateTime.Now,
-                    EndDate = DateTime.Now.AddDays(5)
+                    EndDate = DateTime.Now.AddDays(5),
+                    AssignedUserId = "5b54ca8a-aba8-49bd-9a6e-503ae66fd5d1" // member@test.com
                 },
                 new ProjectTask
                 {
@@ -88,7 +89,8 @@ public static class SeedData
                     Status = TaskManager.Models.TaskStatus.InProgress,
                     StartDate = DateTime.Now.AddDays(-2),
                     EndDate = DateTime.Now.AddDays(3),
-                    MediaUrl = "https://www.youtube.com/embed/PErrvYtVzbk"
+                    MediaUrl = "https://www.youtube.com/embed/PErrvYtVzbk",
+                    AssignedUserId = "5b54ca8a-aba8-49bd-9a6e-503ae66fd5d1" // member@test.com
                 },
                 new ProjectTask
                 {
@@ -97,7 +99,8 @@ public static class SeedData
                     Status = TaskManager.Models.TaskStatus.Completed,
                     StartDate = DateTime.Now.AddDays(-10),
                     EndDate = DateTime.Now.AddDays(-5),
-                    MediaUrl = "https://www.youtube.com/embed/9FjGP4t2zKY"
+                    MediaUrl = "https://www.youtube.com/embed/9FjGP4t2zKY",
+                    AssignedUserId = "80cd74b1-da1e-48e7-a79a-cdd3cad6e7a8" // admin@test.com
                 }
             );
                             

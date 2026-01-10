@@ -39,6 +39,42 @@ namespace TaskManager.Controllers
             return RedirectToAction("Show", "Tasks", new { id = comment.ProjectTaskId });
         }
 
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var comment = db.Comments.Find(id);
+            
+            if (comment == null)
+                return NotFound();
+            
+            if (comment.UserId != userManager.GetUserId(User))
+                return Forbid();
+            
+            return View(comment);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(int id, Comment requestComment)
+        {
+            var comment = db.Comments.Find(id);
+            
+            if (comment == null)
+                return NotFound();
+            
+            if (comment.UserId != userManager.GetUserId(User))
+                return Forbid();
+            
+            if (ModelState.IsValid)
+            {
+                comment.Content = requestComment.Content;
+                db.SaveChanges();
+                
+                return RedirectToAction("Show", "Tasks", new { id = comment.ProjectTaskId });
+            }
+            
+            return View(comment);
+        }
+
         [HttpPost]
         public IActionResult Delete(int id)
         {

@@ -101,12 +101,17 @@
                                 
                                 @if (comm.UserId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
                                 {
-                                    <form asp-controller="Comments" asp-action="Delete" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@comm.Id" />
-                                        <button type="submit" class="btn btn-link text-danger p-0 border-0" style="font-size: 0.9rem;">
-                                            <i class="bi bi-trash"></i> Șterge
-                                        </button>
-                                    </form>
+                                    <div class="d-flex gap-2">
+                                        <a asp-controller="Comments" asp-action="Edit" asp-route-id="@comm.Id" class="btn btn-link text-primary p-0 border-0" style="font-size: 0.9rem;">
+                                            <i class="bi bi-pencil"></i> Editează
+                                        </a>
+                                        <form asp-controller="Comments" asp-action="Delete" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@comm.Id" />
+                                            <button type="submit" class="btn btn-link text-danger p-0 border-0" style="font-size: 0.9rem;" onclick="return confirm('Sigur dorești să ștergi acest comentariu?');">
+                                                <i class="bi bi-trash"></i> Șterge
+                                            </button>
+                                        </form>
+                                    </div>
                                 }
                             </div>
                             <p class="mb-0">@comm.Content</p>

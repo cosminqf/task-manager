@@ -57,6 +57,16 @@
             </div>
 
             <div class="mb-4">
+                <label asp-for="AssignedUserId" class="form-label">
+                    <i class="bi bi-person-fill"></i> Atribuit lui
+                </label>
+                <select asp-for="AssignedUserId" class="form-select" asp-items="ViewBag.UsersList">
+                    <option value="">Neatribuit</option>
+                </select>
+                <span asp-validation-for="AssignedUserId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
                 <label asp-for="Status" class="form-label">
                     <i class="bi bi-list-check"></i> Status
                 </label>
