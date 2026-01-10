@@ -35,8 +35,8 @@ namespace TaskManager.Controllers
         public async Task<IActionResult> Show(int id)
         {
             var task = await db.ProjectTasks
-                               .Include(t => t.Comments) 
-                               .ThenInclude(c => c.User) 
+                               .Include(t => t.Comments)
+                               .ThenInclude(c => c.User)
                                .FirstOrDefaultAsync(t => t.Id == id);
 
             if (task == null) return NotFound();
@@ -45,12 +45,15 @@ namespace TaskManager.Controllers
         }
 
         [HttpGet]
-        public IActionResult New()
+        public IActionResult New(int? projectId)
         {
+            if (projectId == null) return NotFound();
+
             ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email");
-            
+
             ProjectTask task = new ProjectTask
             {
+                ProjectId = projectId.Value,
                 StartDate = DateTime.Now,
                 EndDate = DateTime.Now.AddDays(7)
             };
@@ -60,17 +63,21 @@ namespace TaskManager.Controllers
         [HttpPost]
         public async Task<IActionResult> New(ProjectTask task)
         {
+            ModelState.Remove("Project");
+            ModelState.Remove("Project.Creator");
+            ModelState.Remove("Project.CreatorId");
+
             if (ModelState.IsValid)
             {
-                await HandleMediaUpload(task); 
+                await HandleMediaUpload(task);
 
                 db.ProjectTasks.Add(task);
                 await db.SaveChangesAsync();
-                
+
                 TempData["SuccessMessage"] = "Task creat cu succes!";
-                return RedirectToAction("Index"); 
+                return RedirectToAction("Details", "Projects", new { id = task.ProjectId });
             }
-            
+
             ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email");
             return View(task);
         }
@@ -91,6 +98,8 @@ namespace TaskManager.Controllers
             var existingTask = await db.ProjectTasks.FindAsync(id);
             if (existingTask == null) return NotFound();
 
+            ModelState.Remove("Project");
+
             if (ModelState.IsValid)
             {
                 existingTask.Title = requestTask.Title;
@@ -99,7 +108,7 @@ namespace TaskManager.Controllers
                 existingTask.StartDate = requestTask.StartDate;
                 existingTask.EndDate = requestTask.EndDate;
                 existingTask.AssignedUserId = requestTask.AssignedUserId;
-                
+
                 if (requestTask.TaskImage != null)
                 {
                     if (!string.IsNullOrEmpty(existingTask.MediaUrl) && existingTask.MediaUrl.StartsWith("/images/"))
@@ -110,21 +119,21 @@ namespace TaskManager.Controllers
                             System.IO.File.Delete(oldPath);
                         }
                     }
-                    
+
                     await HandleMediaUpload(requestTask);
                     existingTask.MediaUrl = requestTask.MediaUrl;
                 }
                 else if (requestTask.MediaUrl != existingTask.MediaUrl)
                 {
-                     await HandleMediaUpload(requestTask); 
-                     existingTask.MediaUrl = requestTask.MediaUrl;
+                    await HandleMediaUpload(requestTask);
+                    existingTask.MediaUrl = requestTask.MediaUrl;
                 }
 
                 db.ProjectTasks.Update(existingTask);
                 await db.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Task actualizat cu succes!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", "Projects", new { id = existingTask.ProjectId });
             }
 
             ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email", requestTask.AssignedUserId);
@@ -146,12 +155,13 @@ namespace TaskManager.Controllers
                 }
             }
 
+            var projectId = task.ProjectId;
+
             db.ProjectTasks.Remove(task);
             await db.SaveChangesAsync();
 
-
             TempData["SuccessMessage"] = "Task șters cu succes!";
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", "Projects", new { id = projectId });
         }
 
         [HttpPost]
@@ -172,7 +182,7 @@ namespace TaskManager.Controllers
             };
 
             TempData["SuccessMessage"] = $"Status schimbat în '{statusText}' cu succes!";
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", "Projects", new { id = task.ProjectId });
         }
 
         private async Task HandleMediaUpload(ProjectTask task)
@@ -181,7 +191,7 @@ namespace TaskManager.Controllers
             {
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(task.TaskImage.FileName);
                 var storagePath = Path.Combine(env.WebRootPath, "images", fileName);
-                
+
                 var folderPath = Path.Combine(env.WebRootPath, "images");
                 if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 

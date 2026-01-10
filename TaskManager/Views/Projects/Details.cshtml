@@ -1,0 +1,138 @@
+﻿@model TaskManager.Models.Project
+
+@{
+    ViewData["Title"] = "Detalii Proiect";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var isOrganizer = Model.CreatorId == currentUserId;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h1 class="display-6 fw-bold">@Model.Title</h1>
+            <p class="text-muted mb-0">
+                Creat de <strong>@Model.Creator.UserName</strong> la @Model.DateCreated.ToString("dd/MM/yyyy")
+            </p>
+        </div>
+
+        @if (isOrganizer)
+        {
+            <div>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary me-2">
+                    Editeaza
+                </a>
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                    Sterge Proiect
+                </a>
+            </div>
+        }
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-muted text-uppercase small mb-3">Descriere</h5>
+                    <p class="card-text">@Model.Description</p>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h4 mb-0">Task-uri</h3>
+                <a asp-controller="Tasks" asp-action="New" asp-route-projectId="@Model.Id" class="btn btn-primary">
+                    + Adauga Task
+                </a>
+            </div>
+
+            @if (Model.ProjectTasks != null && Model.ProjectTasks.Any())
+            {
+                <div class="list-group shadow-sm">
+                    @foreach (var task in Model.ProjectTasks)
+                    {
+                        <a asp-controller="Tasks" asp-action="Edit" asp-route-id="@task.Id" class="list-group-item list-group-item-action p-3">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 fw-bold">@task.Title</h5>
+                                <span class="badge rounded-pill
+                                            @(task.Status == TaskManager.Models.TaskStatus.Completed ? "bg-success" :
+                                                                            task.Status == TaskManager.Models.TaskStatus.InProgress ? "bg-warning text-dark" : "bg-secondary")">
+                                    @task.Status
+                                </span>
+                            </div>
+                            <p class="mb-1 text-muted small">@task.Description</p>
+                            <small class="text-muted">Termen: @task.EndDate.ToString("dd/MM/yyyy")</small>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-secondary text-center py-4">
+                    Nu exista task-uri in acest proiect.
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom-0 pt-3">
+                    <h5 class="mb-0 fw-bold">Echipa Proiectului</h5>
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                        <span class="fw-bold">@Model.Creator.UserName</span>
+                        <span class="badge bg-primary">Organizator</span>
+                    </li>
+                    @foreach (var member in Model.Members)
+                    {
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>@member.UserName</span>
+
+                                @if (isOrganizer)
+                                {
+                                    <form asp-action="RemoveMember" method="post">
+                                        <input type="hidden" name="projectId" value="@Model.Id" />
+                                        <input type="hidden" name="userId" value="@member.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            Sterge
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </li>
+                    }
+                </ul>
+
+                @if (isOrganizer)
+                {
+                    <div class="card-body border-top">
+                        <h6 class="card-title mb-3">Invita un membru nou</h6>
+                        <form asp-action="AddMember" method="post">
+                            <input type="hidden" name="projectId" value="@Model.Id" />
+                            <div class="input-group">
+                                <input type="email" name="email" class="form-control" placeholder="Email utilizator" required />
+                                <button type="submit" class="btn btn-success">Invita</button>
+                            </div>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

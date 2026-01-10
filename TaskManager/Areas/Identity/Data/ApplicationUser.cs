@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using TaskManager.Models;
 
-namespace TaskManager.Areas.Identity.Data;
-
-// Add profile data for application users by adding properties to the TaskManagerUser class
-public class ApplicationUser : IdentityUser
+namespace TaskManager.Areas.Identity.Data
 {
+    public class ApplicationUser : IdentityUser
+    {
+        public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
+    }
 }
-

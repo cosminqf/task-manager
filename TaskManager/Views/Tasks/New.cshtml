@@ -21,7 +21,7 @@
         
         <form asp-action="New" method="post" enctype="multipart/form-data">
             
-            
+            <input type="hidden" asp-for="ProjectId" />
 
             <div class="mb-4">
                 <label asp-for="Title" class="form-label">
@@ -117,7 +117,7 @@
                 <button type="submit" class="btn btn-success-custom btn-action btn-lg">
                     <i class="bi bi-check-circle"></i> Salvează Task-ul
                 </button>
-                <a asp-action="Index" class="btn btn-secondary-custom btn-action btn-lg">
+                <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId" class="btn btn-secondary-custom btn-action btn-lg">
                     <i class="bi bi-x-circle"></i> Anulează
                 </a>
             </div>

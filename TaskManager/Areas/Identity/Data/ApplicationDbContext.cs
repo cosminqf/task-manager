@@ -16,11 +16,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<ProjectTask> ProjectTasks { get; set; }
     public DbSet<Comment> Comments { get; set; }
+    public DbSet<Project> Projects { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        // Configure string properties for MySQL compatibility
+
+        builder.Entity<Project>()
+            .HasOne(p => p.Creator)
+            .WithMany()
+            .HasForeignKey(p => p.CreatorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Project>()
+            .HasMany(p => p.Members)
+            .WithMany(u => u.Projects)
+            .UsingEntity(j => j.ToTable("ProjectMembers"));
+
         foreach (var entityType in builder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties())
@@ -30,7 +42,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     var maxLength = property.GetMaxLength();
                     if (maxLength == null)
                     {
-                        
                         if (property.IsKey() || property.IsForeignKey())
                         {
                             property.SetMaxLength(255);
@@ -40,5 +51,4 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             }
         }
     }
-
 }

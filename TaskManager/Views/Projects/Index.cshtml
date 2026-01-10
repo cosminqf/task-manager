@@ -1,0 +1,39 @@
+﻿@model IEnumerable<TaskManager.Models.Project>
+
+@{
+    ViewData["Title"] = "Proiecte";
+}
+
+<h1>Proiectele Mele</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Adauga Proiect Nou</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Titlu</th>
+            <th>Descriere</th>
+            <th>Data Crearii</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="fw-bold text-decoration-none">
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </a>
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                <td>@item.DateCreated.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">Vezi Proiect</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
