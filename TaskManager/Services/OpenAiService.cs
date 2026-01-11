@@ -29,16 +29,19 @@ namespace TaskManager.Services
 
             var requestBody = new
             {
-                model = _settings.Model, 
-                messages = new[]
+                contents = new[]
                 {
-                    new { role = "user", content = prompt }
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = prompt }
+                        }
+                    }
                 }
             };
 
             var bodyString = JsonSerializer.Serialize(requestBody);
-
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.ApiKey);
 
             const int maxAttempts = 3;
             var rand = new Random();
@@ -49,7 +52,8 @@ namespace TaskManager.Services
 
                 try
                 {
-                    var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", jsonContent);
+                    var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_settings.Model}:generateContent?key={_settings.ApiKey}";
+                    var response = await _httpClient.PostAsync(url, jsonContent);
 
                     if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                     {
@@ -58,7 +62,6 @@ namespace TaskManager.Services
                             return "Eroare AI: Limită cereri depășită. Încearcă din nou mai târziu.";
                         }
 
-                        // Respect Retry-After header when present
                         if (response.Headers.TryGetValues("Retry-After", out var values))
                         {
                             var first = values.FirstOrDefault();
@@ -76,7 +79,7 @@ namespace TaskManager.Services
                             await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempt)) + TimeSpan.FromMilliseconds(rand.Next(0, 500)));
                         }
 
-                        continue; // retry
+                        continue;
                     }
 
                     response.EnsureSuccessStatusCode();
@@ -84,11 +87,10 @@ namespace TaskManager.Services
                     var responseString = await response.Content.ReadAsStringAsync();
                     var jsonNode = JsonNode.Parse(responseString);
 
-                    return jsonNode?["choices"]?[0]?["message"]?["content"]?.ToString() ?? "Nu s-a putut genera rezumatul.";
+                    return jsonNode?["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString() ?? "Nu s-a putut genera rezumatul.";
                 }
                 catch (HttpRequestException ex) when (attempt < maxAttempts)
                 {
-                    // transient network error, wait and retry
                     await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempt)) + TimeSpan.FromMilliseconds(rand.Next(0, 500)));
                     continue;
                 }

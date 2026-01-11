@@ -32,17 +32,6 @@ namespace TaskManager.Controllers
             return View(projects);
         }
 
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AdminIndex()
-        {
-            var projects = await _context.Projects
-                .Include(p => p.Creator)
-                .Include(p => p.Members)
-                .OrderByDescending(p => p.DateCreated)
-                .ToListAsync();
-            return View(projects);
-        }
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -51,7 +40,7 @@ namespace TaskManager.Controllers
                 .Include(p => p.Creator)
                 .Include(p => p.Members)
                 .Include(p => p.ProjectTasks)
-                    .ThenInclude(t => t.AssignedUser)
+                    .ThenInclude(t => t.AssignedUser) 
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (project == null) return NotFound();
@@ -97,7 +86,6 @@ namespace TaskManager.Controllers
         {
             var userId = _userManager.GetUserId(User);
             project.CreatorId = userId!;
-            project.DateCreated = DateTime.Now;
 
             ModelState.Remove("Creator");
             ModelState.Remove("CreatorId");
