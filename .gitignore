@@ -21,8 +21,3 @@ Thumbs.db
 task-manager.sln
 
 
-
-# --- Configurare / Securitate ---
-.config/
-appsettings.json
-appsettings.Development.json
