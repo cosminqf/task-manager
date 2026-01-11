@@ -1,103 +1,80 @@
-# task-manager
+# Task Manager
 
-Raport proiect: https://1drv.ms/w/c/ec17cb32d958e7ed/IQD7JlvuI5tzSqoNSPv3qD80AVd1UzOkv_TOvM_o8b0_N18?e=ihc8Yf
+O aplicație web complexă pentru gestionarea proiectelor, echipelor și sarcinilor, dezvoltată utilizând ASP.NET Core 9.0 MVC. Platforma facilitează colaborarea în echipă, urmărirea progresului prin dashboard-uri personalizate și administrarea eficientă a resurselor.
 
-Board Trello: https://trello.com/invite/b/69133955d10c9b794cc4851e/ATTI0e9c64b8393e10c849a8971575f84508192C5ED2/taskmanager
+## Descriere
 
-PLANIFICARE PROIECT: PLATFORMA TASK MANAGEMENT (ASP.NET Core MVC)
+Proiectul propune o soluție centralizată pentru managementul activităților. Aplicația este împărțită în două componente majore: partea organizatorică (gestiune utilizatori, proiecte, administrare) și partea operativă (task-uri, fișiere, dashboard). Sistemul include funcționalități avansate precum integrarea AI pentru generarea de rezumate și suport pentru fișiere media.
 
-INSTRUCȚIUNI GENERALE:
-- Fiecare membru implementează funcționalitățile cap-coadă (Database -> Model -> Controller -> View).
-- Fiecare membru este responsabil de seed-ul datelor pentru entitățile sale.
-- Codul se va uni folosind un repository comun (GitHub/GitLab).
+## Funcționalități Principale
 
---------------------------------------------------------------------------------
-0. RESPONSABILITĂȚI COMUNE (Start & Final)
---------------------------------------------------------------------------------
-- Setup inițial: Creare soluție, instalare Entity Framework Core, Configurare Connection String.
-- Layout General: Creare `_Layout.cshtml` (Navbar, Footer, importuri CSS/JS).
-- Req 11: 
-    - Seed Data: Fiecare își scrie seed-ul pentru partea sa.
-    - README: Fiecare documentează modulele implementate.
+### Autentificare și Utilizatori
+* Sistem complet de autentificare folosind ASP.NET Identity.
+* Roluri definite: Administrator și User (organizatorul este un rol logic la nivel de proiect).
+* Pagini pentru Login, Înregistrare și Logout.
 
-COSMIN: INFRASTRUCTURĂ, ADMINISTRARE & AI
-(Focus: Useri, Proiecte, Echipe, Rapoarte)
+### Gestiune Proiecte și Echipe
+* CRUD complet pentru proiecte (Titlu, Descriere, Dată, Creator).
+* Posibilitatea de a adăuga și șterge membri din proiecte.
+* Vizualizarea listei de membri asociați fiecărui proiect.
 
-1. Autentificare & Roluri (Req 1)
-   [Backend] Configurare ASP.NET Identity.
-   [Backend] Seed pentru rolurile: Admin, User (Organizatorul este logică, nu rol DB).
-   [Frontend] Formulare de Login, Register, Logout.
+### Gestiune Task-uri
+* Creare, editare și ștergere task-uri.
+* Atribute task: Titlu, Descriere, Status (Not Started, In Progress, Completed), Date (Start/End).
+* Upload fișiere media (imagini) și embed video (link YouTube).
+* Asignarea task-urilor către membrii echipei.
+* Validări pentru datele calendaristice.
 
-2. Pagina de Prezentare (Req 2)
-   [Frontend] Landing page (HomeController) cu descriere, beneficii, design atractiv.
-   [Logic] Dacă userul e deja logat, redirect către Dashboard sau lista proiecte.
+### Colaborare și Social
+* Sistem de comentarii pentru fiecare task.
+* Afișare cronologică a discuțiilor.
 
-3. Gestionarea Proiectelor (Req 3)
-   [Entitate] `Project` (Id, Title, Description, DateCreated, CreatorId).
-   [Backend] CRUD complet pentru Proiecte.
-   [Logic] La crearea unui proiect, userul curent devine automat "Organizator".
+### Dashboard și Statistici
+* Dashboard personalizat pentru fiecare utilizator.
+* Statistici vizuale (număr task-uri în lucru, urgente).
+* Filtrare task-uri după status sau urgență (următoarele 24h).
 
-4. Gestionarea Echipei (Req 4)
-   [Entitate] Tabela de legătură `ProjectMembers` (ProjectId, UserId).
-   [Backend] Logică de a adăuga/șterge un user dintr-un proiect.
-   [Frontend] Interfață în pagina proiectului pentru a invita membri (select user dintr-o listă).
-   [Frontend] Lista membrilor afișată în pagina proiectului.
+### Administrare
+* Panel dedicat administratorilor.
+* Gestiune globală a utilizatorilor (ban/delete).
+* Gestiune globală a proiectelor (ștergere forțată).
 
-5. Componenta AI - Rezumat Proiect (Req 9)
-   [Backend] Integrare API (OpenAI/Azure) care primește datele proiectului (titlu + lista task-uri).
-   [Frontend] Buton "Generează Raport" în pagina proiectului.
-   [Frontend] Afișarea răspunsului generat (rezumat progres, deadline-uri).
+### Integrare AI
+* Generare automată de rapoarte și rezumate de proiect folosind API extern (OpenAI/Azure).
 
-6. Administrare Platformă (Req 10)
-   [Controller] `AdminController` accesibil doar cu rolul Administrator.
-   [Frontend] Tabel cu toți userii (ban/delete).
-   [Frontend] Tabel cu toate proiectele (delete forțat dacă e conținut inadecvat).
+## Tehnologii Utilizate
 
-ANDREI: WORKFLOW, TASK-URI & DASHBOARD
-(Focus: Task-uri, Interacțiune, Media, User Experience)
+* **Backend:** ASP.NET Core 9.0 MVC, Entity Framework Core
+* **Bază de date:** MySQL
+* **Frontend:** Razor Views, Bootstrap
+* **Containerizare:** Docker
+* **Altele:** ASP.NET Identity, servicii externe AI
 
-1. Gestionarea Task-urilor (Req 5)
-   [Entitate] `Task` (Id, Title, Description, Status, StartDate, EndDate, MediaUrl, ProjectId).
-   [Backend] CRUD complet pentru Task-uri.
-   [Backend] Implementare Upload poze (IFormFile) și logică embed video (Youtube Link).
-   [Frontend] Formular adăugare task (cu DatePicker și File Input). Validări (End > Start).
+## Instalare și Configurare
 
-2. Atribuire și Status (Req 6)
-   [Backend] Logică de asignare: Un task este legat de un `UserId` (Membru).
-   [Backend] Logică Status: Not Started -> In Progress -> Completed.
-   [Frontend] Dropdown în formularul de task pentru a alege membrul (din lista membrilor proiectului).
-   [Frontend] Butoane rapide de schimbare status în vizualizarea task-ului.
+1. Clonează repository-ul:
+   git clone https://github.com/cosminqf/task-manager.git
 
-3. Sistem de Comentarii (Req 7)
-   [Entitate] `Comment` (Id, Content, DateAdded, TaskId, UserId).
-   [Backend] CRUD Comentarii (Adăugare, Editare, Ștergere - doar propriile comentarii).
-   [Frontend] Secțiune de comentarii sub fiecare Task (afișare cronologică).
+2. Configurează baza de date:
+   Asigură-te că ai un server MySQL activ sau un container Docker configurat.
+   Actualizează connection string-ul în appsettings.json.
 
-4. Dashboard Personalizat (Req 8)
-   [Controller] `DashboardController`.
-   [Backend] Query-uri complexe:
-       - Selectează toate task-urile unde AssignedUserId == CurrentUser.
-       - Grupează task-urile după status sau deadline.
-       - Identifică task-urile cu deadline depășit sau urgent (următoarele 24h).
-   [Frontend] Pagina "My Dashboard":
-       - Carduri cu statistici (ex: "3 Task-uri în lucru").
-       - Listă clară cu task-urile mele, colorate în funcție de urgență.
-       - Filtre (Butoane: "Arată doar Finalizate", "Arată Urgente").
+3. Aplică migrațiile:
+   dotnet ef database update
 
-SUGESTIE ORDINE DE LUCRU (SINCRONIZARE)
-Săptămâna 1:
-- COSMIN: Setup Identity + Proiecte (CRUD).
-- ANDREI: Setup Task-uri (CRUD simplu, fără asignare încă).
+4. Rulează aplicația:
+   dotnet run
 
-Săptămâna 2:
-- COSMIN: Implementează Echipe (adaugă useri în proiecte).
-- ANDREI: Leagă Task-urile de Useri (Assign) și face Upload Media.
+## Structura Bazei de Date
 
-Săptămâna 3:
-- COSMIN: Implementează AI Summary (acum are date reale din task-uri).
-- ANDREI: Implementează Comentarii și Dashboard-ul personal.
+Entitățile principale ale sistemului sunt:
+* ApplicationUser (extinde IdentityUser)
+* Project
+* Task
+* Comment
+* ProjectMembers (tabelă de legătură)
 
-Săptămâna 4:
-- COSMIN: Admin Panel.
-- ANDREI: Finalizare UI/UX Dashboard.
-- Ambii: Seed data final, verificări, README.
+## Autori
+
+* Danciu Cosmin-Alexandru
+* Popescu Ilioniu Andrei
