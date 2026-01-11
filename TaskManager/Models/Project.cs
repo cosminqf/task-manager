@@ -26,5 +26,7 @@ namespace TaskManager.Models
         public virtual ICollection<ApplicationUser> Members { get; set; } = new List<ApplicationUser>();
 
         public virtual ICollection<ProjectTask> ProjectTasks { get; set; } = new List<ProjectTask>();
+
+        public string? AiSummary { get; set; }
     }
 }

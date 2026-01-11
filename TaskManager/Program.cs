@@ -13,6 +13,11 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.Configure<TaskManager.Settings.AiSettings>(builder.Configuration.GetSection("AiSettings"));
+
+// Register OpenAiService as a typed HTTP client and map IAiService to the concrete OpenAiService implementation.
+builder.Services.AddHttpClient<TaskManager.Services.OpenAiService>();
+builder.Services.AddScoped<TaskManager.Services.IAiService>(sp => sp.GetRequiredService<TaskManager.Services.OpenAiService>());
 
 var app = builder.Build();
 

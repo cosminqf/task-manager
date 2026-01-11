@@ -10,13 +10,48 @@
 
 @section Styles {
     <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content {
+            display: none;
+        }
+
+            .tab-content.active {
+                display: block;
+            }
+
+        .tab {
+            cursor: pointer;
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            border-bottom: 2px solid transparent;
+        }
+
+            .tab.active {
+                border-bottom: 2px solid var(--bs-primary);
+                font-weight: bold;
+                color: var(--bs-primary);
+            }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .avatar-lg {
+            width: 48px;
+            height: 48px;
+            font-size: 1.2rem;
+        }
     </style>
 }
 
 <div class="container mt-4">
-    <!-- Alerts -->
     @if (TempData["Message"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show">
@@ -32,11 +67,20 @@
         </div>
     }
 
-    <!-- Project Header -->
-    <partial name="_ProjectHeader" model="Model" />
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h1 class="display-6 fw-bold">@Model.Title</h1>
+            <p class="text-muted mb-0">
+                Creat de <strong>@(Model.Creator?.UserName ?? "Unknown")</strong> la @Model.DateCreated.ToString("dd MMMM yyyy")
+            </p>
+        </div>
+        <div>
+            <span class="badge bg-secondary">@Model.ProjectTasks?.Count() Task-uri</span>
+            <span class="badge bg-info text-dark">@Model.Members?.Count() Membri</span>
+        </div>
+    </div>
 
-    <!-- Tabs Navigation -->
-    <div class="tabs">
+    <div class="tabs mb-4 border-bottom">
         <button class="tab active" onclick="showTab('overview')">
             <i class="bi bi-grid"></i> Overview
         </button>
@@ -57,52 +101,51 @@
         }
     </div>
 
-    <!-- Tab: Overview -->
     <div id="overview" class="tab-content active">
         <div class="row">
             <div class="col-lg-8">
-                <div class="card mb-lg">
+                <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="bi bi-info-circle"></i> Despre Proiect</h5>
                     </div>
                     <div class="card-body">
                         <p>@Model.Description</p>
-                        
-                        <div class="row g-3 mt-md">
+
+                        <div class="row g-3 mt-4">
                             <div class="col-md-4">
-                                <div class="stat-card">
-                                    <span class="stat-number">@(Model.ProjectTasks?.Count ?? 0)</span>
-                                    <span class="stat-label">Total Task-uri</span>
+                                <div class="p-3 border rounded text-center">
+                                    <h3 class="mb-0">@(Model.ProjectTasks?.Count ?? 0)</h3>
+                                    <small class="text-muted">Total Task-uri</small>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="stat-card">
-                                    <span class="stat-number" style="color: var(--color-success);">
+                                <div class="p-3 border rounded text-center">
+                                    <h3 class="text-success mb-0">
                                         @(Model.ProjectTasks?.Count(t => t.Status == TaskManager.Models.TaskStatus.Completed) ?? 0)
-                                    </span>
-                                    <span class="stat-label">Finalizate</span>
+                                    </h3>
+                                    <small class="text-muted">Finalizate</small>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="stat-card">
-                                    <span class="stat-number" style="color: var(--color-primary);">@(Model.Members?.Count ?? 0)</span>
-                                    <span class="stat-label">Membri</span>
+                                <div class="p-3 border rounded text-center">
+                                    <h3 class="text-primary mb-0">@(Model.Members?.Count ?? 0)</h3>
+                                    <small class="text-muted">Membri</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-calendar"></i> Activitate Recentă</h6>
+                        <h6 class="mb-0"><i class="bi bi-calendar"></i> Activitate</h6>
                     </div>
                     <div class="card-body">
                         <p class="text-muted small mb-2">
-                            <i class="bi bi-plus-circle"></i> Proiect creat la<br />
-                            <strong>@Model.DateCreated.ToString("dd MMMM yyyy, HH:mm")</strong>
+                            <i class="bi bi-plus-circle"></i> Proiect creat: <br />
+                            <strong>@Model.DateCreated.ToString("dd MMM yyyy, HH:mm")</strong>
                         </p>
                         @if (Model.ProjectTasks != null && Model.ProjectTasks.Any())
                         {
@@ -110,7 +153,7 @@
                             if (latestTask != null)
                             {
                                 <p class="text-muted small mb-0">
-                                    <i class="bi bi-check-circle"></i> Ultimul task<br />
+                                    <i class="bi bi-check-circle"></i> Ultimul task: <br />
                                     <strong>@latestTask.Title</strong>
                                 </p>
                             }
@@ -121,10 +164,9 @@
         </div>
     </div>
 
-    <!-- Tab: Tasks -->
     <div id="tasks" class="tab-content">
-        <div class="d-flex justify-content-between align-items-center mb-lg">
-            <h3 class="mb-0"><i class="bi bi-list-check"></i> Task-uri (@(Model.ProjectTasks?.Count ?? 0))</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">Task-uri</h3>
             @if (canManage)
             {
                 <a asp-controller="Tasks" asp-action="New" asp-route-projectId="@Model.Id" class="btn btn-primary">
@@ -135,37 +177,43 @@
 
         @if (Model.ProjectTasks != null && Model.ProjectTasks.Any())
         {
-            <div class="row g-4">
-                @foreach (var task in Model.ProjectTasks.OrderBy(t => t.Status).ThenBy(t => t.EndDate))
+            <div class="list-group">
+                @foreach (var task in Model.ProjectTasks.OrderBy(t => t.Status))
                 {
-                    <div class="col-md-6 col-lg-4">
-                        <partial name="_TaskCard" model="task" />
+                    <div class="list-group-item list-group-item-action p-3">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">@task.Title</h5>
+                            <small class="text-muted">@task.EndDate.ToString("dd/MM/yyyy")</small>
+                        </div>
+                        <p class="mb-1 text-muted small">@task.Description</p>
+                        <div class="mt-2">
+                            <span class="badge rounded-pill @(task.Status == TaskManager.Models.TaskStatus.Completed ? "bg-success" : task.Status == TaskManager.Models.TaskStatus.InProgress ? "bg-warning text-dark" : "bg-secondary")">
+                                @task.Status
+                            </span>
+                            @if (!string.IsNullOrEmpty(task.AssignedUserId))
+                            {
+                                <span class="badge bg-light text-dark border ms-2">
+                                    <i class="bi bi-person"></i> @(task.AssignedUser?.UserName ?? "Asignat")
+                                </span>
+                            }
+                            <a asp-controller="Tasks" asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-link text-decoration-none ms-2">Detalii</a>
+                        </div>
                     </div>
                 }
             </div>
         }
         else
         {
-            ViewBag.Icon = "📝";
-                ViewBag.Title = "Niciun task încă";
-                ViewBag.Description = "Acest proiect nu conține task-uri. Începe prin a adăuga primul task.";
-                if (canManage)
-                {
-                    ViewBag.ActionText = "Adaugă Task";
-                    ViewBag.ActionUrl = Url.Action("New", "Tasks", new { projectId = Model.Id });
-                }
-            }
-            <partial name="_EmptyState" />
+            <div class="alert alert-secondary text-center">
+                Nu există task-uri. Începe prin a adăuga unul!
+            </div>
         }
     </div>
 
-    <!-- Tab: Members -->
     <div id="members" class="tab-content">
         <div class="row">
             <div class="col-lg-8">
-                <h3 class="mb-lg"><i class="bi bi-people"></i> Membri Proiect (@(Model.Members?.Count + 1 ?? 1))</h3>
-                
-                <div class="card mb-lg">
+                <div class="card">
                     <div class="list-group list-group-flush">
                         <div class="list-group-item">
                             <div class="d-flex align-items-center justify-content-between">
@@ -173,16 +221,16 @@
                                     <span class="avatar avatar-lg">@(Model.Creator?.UserName?.Substring(0, 1).ToUpper() ?? "O")</span>
                                     <div>
                                         <strong>@(Model.Creator?.UserName ?? "Unknown")</strong>
-                                        <div class="small text-muted">@(Model.Creator?.Email ?? "")</div>
+                                        <div class="small text-muted">@Model.Creator?.Email</div>
                                     </div>
                                 </div>
-                                <span class="badge badge-primary">Organizator</span>
+                                <span class="badge bg-primary">Organizator</span>
                             </div>
                         </div>
-                        
-                        @if (Model.Members != null && Model.Members.Any())
+
+                        @if (Model.Members != null)
                         {
-                            @foreach (var member in Model.Members)
+                            foreach (var member in Model.Members)
                             {
                                 <div class="list-group-item">
                                     <div class="d-flex align-items-center justify-content-between">
@@ -193,15 +241,13 @@
                                                 <div class="small text-muted">@member.Email</div>
                                             </div>
                                         </div>
-                                        
                                         @if (canManage)
                                         {
-                                            <form asp-action="RemoveMember" method="post" style="display: inline;">
+                                            <form asp-action="RemoveMember" method="post" class="d-inline">
                                                 <input type="hidden" name="projectId" value="@Model.Id" />
                                                 <input type="hidden" name="userId" value="@member.Id" />
-                                                <button type="submit" class="btn btn-danger btn-sm" 
-                                                        onclick="return confirm('Sigur doriți să eliminați acest membru?');">
-                                                    <i class="bi bi-person-x"></i> Elimină
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Eliminați acest membru?');">
+                                                    Elimină
                                                 </button>
                                             </form>
                                         }
@@ -212,28 +258,22 @@
                     </div>
                 </div>
             </div>
-            
+
             @if (canManage)
             {
                 <div class="col-lg-4">
-                    <div class="card">
+                    <div class="card mt-3 mt-lg-0">
                         <div class="card-header">
-                            <h6 class="mb-0"><i class="bi bi-person-plus"></i> Invită Membru Nou</h6>
+                            <h6 class="mb-0"><i class="bi bi-person-plus"></i> Invită Membru</h6>
                         </div>
                         <div class="card-body">
                             <form asp-action="AddMember" method="post">
                                 <input type="hidden" name="projectId" value="@Model.Id" />
-                                <div class="form-group">
-                                    <label class="form-label" for="email">Email Utilizator</label>
-                                    <input type="email" name="email" id="email" class="form-control" 
-                                           placeholder="nume@exemplu.com" required />
-                                    <div class="form-text">
-                                        Membrul va primi o invitație să se alăture proiectului.
-                                    </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" name="email" class="form-control" required placeholder="nume@exemplu.com" />
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="bi bi-send"></i> Trimite Invitație
-                                </button>
+                                <button type="submit" class="btn btn-primary w-100">Trimite Invitație</button>
                             </form>
                         </div>
                     </div>
@@ -242,66 +282,60 @@
         </div>
     </div>
 
-    <!-- Tab: AI Summary -->
     <div id="ai-summary" class="tab-content">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-stars"></i> Raport AI - Progres Proiect</h5>
-                @if (canManage)
-                {
-                    <button class="btn btn-primary btn-sm" onclick="alert('Funcționalitate AI în dezvoltare');">
-                        <i class="bi bi-arrow-clockwise"></i> Actualizează Raportul
+                <h5 class="mb-0"><i class="bi bi-stars"></i> Raport AI</h5>
+                <form asp-action="GenerateSummary" asp-route-id="@Model.Id" method="post">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-magic"></i> Generează Raport Nou
                     </button>
-                }
+                </form>
             </div>
             <div class="card-body">
-                @{
-                    ViewBag.Icon = "🤖";
-                    ViewBag.Title = "Nu există actualizări recente pentru acest proiect";
-                    ViewBag.Description = "Raportul AI va fi generat automat pe baza progresului proiectului. Revino mai târziu sau apasă butonul de actualizare pentru a genera un raport nou.";
+                @if (!string.IsNullOrEmpty(Model.AiSummary))
+                {
+                    <div class="p-4 bg-light border rounded">
+                        <h6 class="text-primary mb-3"><i class="bi bi-robot"></i> Analiza curentă a proiectului:</h6>
+                        <p class="mb-0" style="white-space: pre-line; line-height: 1.6;">@Model.AiSummary</p>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        * Acest rezumat a fost generat automat folosind inteligența artificială pe baza task-urilor curente.
+                    </small>
                 }
-                <partial name="_EmptyState" />
-                
-                <div class="alert alert-info mt-lg">
-                    <i class="bi bi-info-circle"></i> <strong>Informație</strong><br />
-                    Raportul AI va include analiza progresului, identificarea blocajelor și recomandări pentru optimizare.
-                </div>
+                else
+                {
+                    <div class="text-center py-5">
+                        <div class="display-1 mb-3">🤖</div>
+                        <h4>Niciun raport generat</h4>
+                        <p class="text-muted">Apasă butonul de generare pentru a analiza progresul proiectului.</p>
+                    </div>
+                }
             </div>
         </div>
     </div>
 
-    <!-- Tab: Settings (only for organizer/admin) -->
     @if (canManage)
     {
         <div id="settings" class="tab-content">
             <div class="row">
                 <div class="col-lg-8">
-                    <div class="card mb-lg">
+                    <div class="card">
                         <div class="card-header">
-                            <h5 class="mb-0"><i class="bi bi-gear"></i> Setări Proiect</h5>
+                            <h5 class="mb-0">Setări Proiect</h5>
                         </div>
                         <div class="card-body">
-                            <h6 class="mb-md">Acțiuni Disponibile</h6>
-                            <div class="d-flex flex-column gap-3">
+                            <div class="d-grid gap-2">
                                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary">
-                                    <i class="bi bi-pencil"></i> Editează Proiectul
+                                    <i class="bi bi-pencil"></i> Editează Detaliile
                                 </a>
-                                
                                 <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
-                                    <button type="submit" class="btn btn-danger w-100" 
-                                            onclick="return confirm('ATENȚIE: Ștergerea proiectului va elimina și toate task-urile asociate. Sigur doriți să continuați?');">
+                                    <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Sigur ștergi proiectul?');">
                                         <i class="bi bi-trash"></i> Șterge Proiectul
                                     </button>
                                 </form>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4">
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle"></i> <strong>Atenție</strong><br />
-                        Ștergerea proiectului este permanentă și va elimina toate task-urile și comentariile asociate.
                     </div>
                 </div>
             </div>
@@ -312,194 +346,10 @@
 @section Scripts {
     <script>
         function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Remove active class from all tab buttons
-            document.querySelectorAll('.tab').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show selected tab
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            
-            // Add active class to clicked button
             event.target.closest('.tab').classList.add('active');
         }
     </script>
 }
-
-
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-        <div>
-            <h1 class="display-6 fw-bold">@Model.Title</h1>
-            <p class="text-muted mb-0">
-                Creat de <strong>@(Model.Creator?.UserName ?? "Unknown")</strong> la @Model.DateCreated.ToString("dd/MM/yyyy")
-            </p>
-        </div>
-
-        @if (isOrganizer)
-        {
-            <div>
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary me-2">
-                    Editeaza
-                </a>
-                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
-                    Sterge Proiect
-                </a>
-            </div>
-        }
-    </div>
-
-    @if (TempData["Message"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show">
-            @TempData["Message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title text-muted text-uppercase small mb-3">Descriere</h5>
-                    <p class="card-text">@Model.Description</p>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="h4 mb-0">Task-uri</h3>
-                @if (isOrganizer)
-                {
-                    <a asp-controller="Tasks" asp-action="New" asp-route-projectId="@Model.Id" class="btn btn-primary">
-                        + Adaugă Task
-                    </a>
-                }
-            </div>
-
-            @if (Model.ProjectTasks != null && Model.ProjectTasks.Any())
-            {
-                <div class="list-group shadow-sm">
-                    @foreach (var task in Model.ProjectTasks)
-                    {
-                        var canEdit = isOrganizer || task.AssignedUserId == currentUserId;
-                        
-                        <div class="list-group-item p-3">
-                            <div class="d-flex w-100 justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h5 class="mb-1 fw-bold">@task.Title</h5>
-                                    <p class="mb-1 text-muted small">@task.Description</p>
-                                    <small class="text-muted">
-                                        <i class="bi bi-calendar"></i> Termen: @task.EndDate.ToString("dd/MM/yyyy")
-                                        @if (!string.IsNullOrEmpty(task.AssignedUserId))
-                                        {
-                                            <span class="ms-2">
-                                                <i class="bi bi-person"></i> Asignat: @(task.AssignedUser?.Email ?? "Necunoscut")
-                                            </span>
-                                        }
-                                    </small>
-                                </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="badge rounded-pill
-                                                @(task.Status == TaskManager.Models.TaskStatus.Completed ? "bg-success" :
-                                                  task.Status == TaskManager.Models.TaskStatus.InProgress ? "bg-warning text-dark" : "bg-secondary")">
-                                        @(task.Status == TaskManager.Models.TaskStatus.NotStarted ? "Neînceput" :
-                                          task.Status == TaskManager.Models.TaskStatus.InProgress ? "În Progres" : "Finalizat")
-                                    </span>
-                                    
-                                    @if (canEdit)
-                                    {
-                                        <a asp-controller="Tasks" asp-action="Edit" asp-route-id="@task.Id" 
-                                           class="btn btn-sm btn-outline-primary" title="Editează">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                    }
-                                    
-                                    @if (isOrganizer)
-                                    {
-                                        <form asp-controller="Tasks" asp-action="Delete" method="post" class="d-inline">
-                                            <input type="hidden" name="id" value="@task.Id" />
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="return confirm('Sigur doriți să ștergeți acest task?');" 
-                                                    title="Șterge">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-secondary text-center py-4">
-                    Nu exista task-uri in acest proiect.
-                </div>
-            }
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white border-bottom-0 pt-3">
-                    <h5 class="mb-0 fw-bold">Echipa Proiectului</h5>
-                </div>
-
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
-                        <span class="fw-bold">@(Model.Creator?.UserName ?? "Unknown")</span>
-                        <span class="badge bg-primary">Organizator</span>
-                    </li>
-                    @if (Model.Members != null)
-                    {
-                        @foreach (var member in Model.Members)
-                        {
-                            <li class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span>@member.UserName</span>
-
-                                    @if (isOrganizer)
-                                    {
-                                        <form asp-action="RemoveMember" method="post">
-                                            <input type="hidden" name="projectId" value="@Model.Id" />
-                                            <input type="hidden" name="userId" value="@member.Id" />
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                Sterge
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </li>
-                        }
-                    }
-                </ul>
-
-                @if (isOrganizer)
-                {
-                    <div class="card-body border-top">
-                        <h6 class="card-title mb-3">Invita un membru nou</h6>
-                        <form asp-action="AddMember" method="post">
-                            <input type="hidden" name="projectId" value="@Model.Id" />
-                            <div class="input-group">
-                                <input type="email" name="email" class="form-control" placeholder="Email utilizator" required />
-                                <button type="submit" class="btn btn-success">Invita</button>
-                            </div>
-                        </form>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-</div>

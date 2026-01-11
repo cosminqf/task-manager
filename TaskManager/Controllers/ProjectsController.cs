@@ -13,11 +13,13 @@ namespace TaskManager.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly TaskManager.Services.IAiService _aiService;
 
-        public ProjectsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ProjectsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, TaskManager.Services.IAiService aiService)
         {
             _context = context;
             _userManager = userManager;
+            _aiService = aiService;
         }
 
         public async Task<IActionResult> Index()
@@ -49,12 +51,40 @@ namespace TaskManager.Controllers
                 .Include(p => p.Creator)
                 .Include(p => p.Members)
                 .Include(p => p.ProjectTasks)
-                    .ThenInclude(t => t.AssignedUser) // Include și utilizatorul asignat
+                    .ThenInclude(t => t.AssignedUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (project == null) return NotFound();
 
             return View(project);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GenerateSummary(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.ProjectTasks)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                var summary = await _aiService.GenerateProjectSummaryAsync(project);
+                project.AiSummary = summary;
+                _context.Update(project);
+                await _context.SaveChangesAsync();
+                TempData["Message"] = "Raportul AI a fost generat cu succes!";
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Eroare la comunicarea cu serviciul AI.";
+            }
+
+            return RedirectToAction(nameof(Details), new { id = id });
         }
 
         public IActionResult Create()
@@ -67,6 +97,7 @@ namespace TaskManager.Controllers
         {
             var userId = _userManager.GetUserId(User);
             project.CreatorId = userId!;
+            project.DateCreated = DateTime.Now;
 
             ModelState.Remove("Creator");
             ModelState.Remove("CreatorId");
@@ -141,6 +172,9 @@ namespace TaskManager.Controllers
             var project = await _context.Projects.FindAsync(id);
             if (project != null)
             {
+                var userId = _userManager.GetUserId(User);
+                if (project.CreatorId != userId) return Forbid();
+
                 _context.Projects.Remove(project);
                 await _context.SaveChangesAsync();
             }
@@ -158,15 +192,22 @@ namespace TaskManager.Controllers
 
             var userToAdd = await _userManager.FindByEmailAsync(email);
 
-            if (userToAdd != null && !project.Members.Contains(userToAdd))
+            if (userToAdd != null)
             {
-                project.Members.Add(userToAdd);
-                await _context.SaveChangesAsync();
-                TempData["Message"] = "Membru adaugat cu succes.";
+                if (!project.Members.Any(m => m.Id == userToAdd.Id) && project.CreatorId != userToAdd.Id)
+                {
+                    project.Members.Add(userToAdd);
+                    await _context.SaveChangesAsync();
+                    TempData["Message"] = "Membru adăugat cu succes.";
+                }
+                else
+                {
+                    TempData["Error"] = "Utilizatorul este deja membru sau este creatorul proiectului.";
+                }
             }
             else
             {
-                TempData["Error"] = "Utilizatorul nu exista sau e deja membru.";
+                TempData["Error"] = "Nu s-a găsit niciun utilizator cu acest email.";
             }
 
             return RedirectToAction(nameof(Details), new { id = projectId });
@@ -186,7 +227,7 @@ namespace TaskManager.Controllers
             {
                 project.Members.Remove(userToRemove);
                 await _context.SaveChangesAsync();
-                TempData["Message"] = "Membru sters din proiect.";
+                TempData["Message"] = "Membru eliminat din proiect.";
             }
 
             return RedirectToAction(nameof(Details), new { id = projectId });
