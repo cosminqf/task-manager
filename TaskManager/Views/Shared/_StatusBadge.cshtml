@@ -1,0 +1,23 @@
+@model TaskManager.Models.TaskStatus
+
+@{
+    var statusText = Model switch
+    {
+        TaskManager.Models.TaskStatus.NotStarted => "Neînceput",
+        TaskManager.Models.TaskStatus.InProgress => "În Progres",
+        TaskManager.Models.TaskStatus.Completed => "Finalizat",
+        _ => "Unknown"
+    };
+    
+    var statusClass = Model switch
+    {
+        TaskManager.Models.TaskStatus.NotStarted => "status-notstarted",
+        TaskManager.Models.TaskStatus.InProgress => "status-inprogress",
+        TaskManager.Models.TaskStatus.Completed => "status-completed",
+        _ => "status-notstarted"
+    };
+}
+
+<span class="status-badge @statusClass">
+    @statusText
+</span>

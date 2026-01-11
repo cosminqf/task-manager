@@ -1,30 +1,55 @@
 ﻿@model TaskManager.Models.Project
 
 @{
-    ViewData["Title"] = "Adauga Proiect";
+    ViewData["Title"] = "Adaugă Proiect";
 }
 
-<h1>Adauga Proiect Nou</h1>
+<div class="container mt-4 mb-xl">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="bi bi-folder-plus"></i> Adaugă Proiect Nou
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div class="form-group">
+                            <label asp-for="Title" class="form-label">
+                                <i class="bi bi-card-heading"></i> Titlu Proiect
+                            </label>
+                            <input asp-for="Title" class="form-control" placeholder="Ex: Website Redesign" required />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div class="form-group mb-3">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
+                        <div class="form-group">
+                            <label asp-for="Description" class="form-label">
+                                <i class="bi bi-file-text"></i> Descriere
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="5" 
+                                      placeholder="Descrie scopul și obiectivele proiectului..." required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <div class="form-text">
+                                O descriere clară ajută membrii echipei să înțelegă obiectivele proiectului.
+                            </div>
+                        </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Creează Proiect
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Înapoi
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-group">
-                <input type="submit" value="Salveaza" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Inapoi</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

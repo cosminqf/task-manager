@@ -45,11 +45,32 @@ namespace TaskManager.Controllers
         }
 
         [HttpGet]
-        public IActionResult New(int? projectId)
+        public async Task<IActionResult> New(int? projectId)
         {
             if (projectId == null) return NotFound();
 
-            ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email");
+            var project = await db.Projects
+                .Include(p => p.Creator)
+                .Include(p => p.Members)
+                .FirstOrDefaultAsync(p => p.Id == projectId);
+            
+            if (project == null || project.Creator == null) return NotFound();
+
+            var currentUserId = userManager.GetUserId(User);
+            var isOrganizer = project.CreatorId == currentUserId;
+
+            // Doar organizatorul poate crea task-uri
+            if (!isOrganizer)
+            {
+                TempData["Error"] = "Doar organizatorul poate crea task-uri noi.";
+                return RedirectToAction("Details", "Projects", new { id = projectId });
+            }
+
+            // Lista utilizatorilor - organizator + membri proiectului
+            var projectUsers = new List<ApplicationUser> { project.Creator };
+            projectUsers.AddRange(project.Members);
+            
+            ViewBag.UsersList = new SelectList(projectUsers, "Id", "Email");
 
             ProjectTask task = new ProjectTask
             {
@@ -63,6 +84,23 @@ namespace TaskManager.Controllers
         [HttpPost]
         public async Task<IActionResult> New(ProjectTask task)
         {
+            var project = await db.Projects
+                .Include(p => p.Creator)
+                .Include(p => p.Members)
+                .FirstOrDefaultAsync(p => p.Id == task.ProjectId);
+            
+            if (project == null || project.Creator == null) return NotFound();
+
+            var currentUserId = userManager.GetUserId(User);
+            var isOrganizer = project.CreatorId == currentUserId;
+
+            // Doar organizatorul poate crea task-uri
+            if (!isOrganizer)
+            {
+                TempData["Error"] = "Doar organizatorul poate crea task-uri noi.";
+                return RedirectToAction("Details", "Projects", new { id = task.ProjectId });
+            }
+
             ModelState.Remove("Project");
             ModelState.Remove("Project.Creator");
             ModelState.Remove("Project.CreatorId");
@@ -78,55 +116,107 @@ namespace TaskManager.Controllers
                 return RedirectToAction("Details", "Projects", new { id = task.ProjectId });
             }
 
-            ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email");
+            var projectUsers = new List<ApplicationUser> { project.Creator };
+            projectUsers.AddRange(project.Members);
+            ViewBag.UsersList = new SelectList(projectUsers, "Id", "Email");
             return View(task);
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var task = await db.ProjectTasks.FindAsync(id);
-            if (task == null) return NotFound();
+            var task = await db.ProjectTasks
+                .Include(t => t.Project)
+                    .ThenInclude(p => p!.Members)
+                .Include(t => t.Project!.Creator)
+                .FirstOrDefaultAsync(t => t.Id == id);
+            
+            if (task == null || task.Project == null) return NotFound();
 
-            ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email", task.AssignedUserId);
+            var currentUserId = userManager.GetUserId(User);
+            var isOrganizer = task.Project.CreatorId == currentUserId;
+            var isAssigned = task.AssignedUserId == currentUserId;
+
+            // Doar organizatori sau utilizatori asignați pot edita
+            if (!isOrganizer && !isAssigned)
+            {
+                TempData["Error"] = "Nu aveți permisiunea de a edita acest task.";
+                return RedirectToAction("Details", "Projects", new { id = task.ProjectId });
+            }
+
+            // Lista de utilizatori pentru dropdown (doar organizatori văd dropdown-ul)
+            if (isOrganizer)
+            {
+                var projectUsers = new List<ApplicationUser> { task.Project.Creator };
+                projectUsers.AddRange(task.Project.Members);
+                ViewBag.UsersList = new SelectList(projectUsers, "Id", "Email", task.AssignedUserId);
+            }
+            
+            ViewBag.IsOrganizer = isOrganizer;
             return View(task);
         }
 
         [HttpPost]
         public async Task<IActionResult> Edit(int id, ProjectTask requestTask)
         {
-            var existingTask = await db.ProjectTasks.FindAsync(id);
-            if (existingTask == null) return NotFound();
+            var existingTask = await db.ProjectTasks
+                .Include(t => t.Project)
+                    .ThenInclude(p => p!.Members)
+                .Include(t => t.Project!.Creator)
+                .FirstOrDefaultAsync(t => t.Id == id);
+            
+            if (existingTask == null || existingTask.Project == null) return NotFound();
+
+            var currentUserId = userManager.GetUserId(User);
+            var isOrganizer = existingTask.Project.CreatorId == currentUserId;
+            var isAssigned = existingTask.AssignedUserId == currentUserId;
+
+            // Verifică permisiunile
+            if (!isOrganizer && !isAssigned)
+            {
+                TempData["Error"] = "Nu aveți permisiunea de a edita acest task.";
+                return RedirectToAction("Details", "Projects", new { id = existingTask.ProjectId });
+            }
 
             ModelState.Remove("Project");
 
             if (ModelState.IsValid)
             {
-                existingTask.Title = requestTask.Title;
-                existingTask.Description = requestTask.Description;
-                existingTask.Status = requestTask.Status;
-                existingTask.StartDate = requestTask.StartDate;
-                existingTask.EndDate = requestTask.EndDate;
-                existingTask.AssignedUserId = requestTask.AssignedUserId;
-
-                if (requestTask.TaskImage != null)
+                // Organizatorii pot modifica totul
+                if (isOrganizer)
                 {
-                    if (!string.IsNullOrEmpty(existingTask.MediaUrl) && existingTask.MediaUrl.StartsWith("/images/"))
+                    existingTask.Title = requestTask.Title;
+                    existingTask.Description = requestTask.Description;
+                    existingTask.Status = requestTask.Status;
+                    existingTask.StartDate = requestTask.StartDate;
+                    existingTask.EndDate = requestTask.EndDate;
+                    existingTask.AssignedUserId = requestTask.AssignedUserId;
+
+                    // Doar organizatorii pot modifica media
+                    if (requestTask.TaskImage != null)
                     {
-                        var oldPath = Path.Combine(env.WebRootPath, existingTask.MediaUrl.TrimStart('/'));
-                        if (System.IO.File.Exists(oldPath))
+                        if (!string.IsNullOrEmpty(existingTask.MediaUrl) && existingTask.MediaUrl.StartsWith("/images/"))
                         {
-                            System.IO.File.Delete(oldPath);
+                            var oldPath = Path.Combine(env.WebRootPath, existingTask.MediaUrl.TrimStart('/'));
+                            if (System.IO.File.Exists(oldPath))
+                            {
+                                System.IO.File.Delete(oldPath);
+                            }
                         }
-                    }
 
-                    await HandleMediaUpload(requestTask);
-                    existingTask.MediaUrl = requestTask.MediaUrl;
+                        await HandleMediaUpload(requestTask);
+                        existingTask.MediaUrl = requestTask.MediaUrl;
+                    }
+                    else if (requestTask.MediaUrl != existingTask.MediaUrl)
+                    {
+                        await HandleMediaUpload(requestTask);
+                        existingTask.MediaUrl = requestTask.MediaUrl;
+                    }
                 }
-                else if (requestTask.MediaUrl != existingTask.MediaUrl)
+                // Membrii pot modifica doar statusul
+                else
                 {
-                    await HandleMediaUpload(requestTask);
-                    existingTask.MediaUrl = requestTask.MediaUrl;
+                    existingTask.Status = requestTask.Status;
                 }
 
                 db.ProjectTasks.Update(existingTask);
@@ -136,15 +226,35 @@ namespace TaskManager.Controllers
                 return RedirectToAction("Details", "Projects", new { id = existingTask.ProjectId });
             }
 
-            ViewBag.UsersList = new SelectList(userManager.Users.ToList(), "Id", "Email", requestTask.AssignedUserId);
+            // În caz de eroare, returnează view-ul cu datele necesare
+            if (isOrganizer)
+            {
+                var projectUsers = new List<ApplicationUser> { existingTask.Project.Creator };
+                projectUsers.AddRange(existingTask.Project.Members);
+                ViewBag.UsersList = new SelectList(projectUsers, "Id", "Email", requestTask.AssignedUserId);
+            }
+            ViewBag.IsOrganizer = isOrganizer;
             return View(requestTask);
         }
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var task = await db.ProjectTasks.FindAsync(id);
-            if (task == null) return NotFound();
+            var task = await db.ProjectTasks
+                .Include(t => t.Project)
+                .FirstOrDefaultAsync(t => t.Id == id);
+            
+            if (task == null || task.Project == null) return NotFound();
+
+            var currentUserId = userManager.GetUserId(User);
+            var isOrganizer = task.Project.CreatorId == currentUserId;
+
+            // Doar organizatorul poate șterge task-uri
+            if (!isOrganizer)
+            {
+                TempData["Error"] = "Doar organizatorul poate șterge task-uri.";
+                return RedirectToAction("Details", "Projects", new { id = task.ProjectId });
+            }
 
             if (!string.IsNullOrEmpty(task.MediaUrl) && task.MediaUrl.StartsWith("/images/"))
             {
@@ -167,8 +277,22 @@ namespace TaskManager.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangeStatus(int id, TaskManager.Models.TaskStatus newStatus)
         {
-            var task = await db.ProjectTasks.FindAsync(id);
-            if (task == null) return NotFound();
+            var task = await db.ProjectTasks
+                .Include(t => t.Project)
+                .FirstOrDefaultAsync(t => t.Id == id);
+            
+            if (task == null || task.Project == null) return NotFound();
+
+            var currentUserId = userManager.GetUserId(User);
+            var isOrganizer = task.Project.CreatorId == currentUserId;
+            var isAssigned = task.AssignedUserId == currentUserId;
+
+            // Doar organizatori sau utilizatori asignați pot schimba statusul
+            if (!isOrganizer && !isAssigned)
+            {
+                TempData["Error"] = "Nu aveți permisiunea de a modifica statusul acestui task.";
+                return RedirectToAction("Details", "Projects", new { id = task.ProjectId });
+            }
 
             task.Status = newStatus;
             await db.SaveChangesAsync();

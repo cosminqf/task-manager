@@ -2,37 +2,42 @@
 
 @{ ViewData["Title"] = "Editează Comentariu"; }
 
-<div class="container mt-5 mb-5">
-    <div class="card shadow-sm" style="border-radius: 15px; border: none;">
-        <div class="card-header bg-primary text-white" style="border-radius: 15px 15px 0 0;">
-            <h3 class="mb-0">
-                <i class="bi bi-pencil-square"></i> Editează Comentariul
-            </h3>
-        </div>
-        <div class="card-body p-4">
-            <form asp-action="Edit" method="post">
-                <input type="hidden" asp-for="Id" />
-                <input type="hidden" asp-for="ProjectTaskId" />
-                <input type="hidden" asp-for="UserId" />
-                <input type="hidden" asp-for="DateAdded" />
-
-                <div class="mb-4">
-                    <label asp-for="Content" class="form-label fw-bold">
-                        <i class="bi bi-chat-text"></i> Conținut Comentariu
-                    </label>
-                    <textarea asp-for="Content" class="form-control" rows="5" placeholder="Editează comentariul tău..."></textarea>
-                    <span asp-validation-for="Content" class="text-danger"></span>
+<div class="container mt-4 mb-xl">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="bi bi-pencil-square"></i> Editează Comentariul
+                    </h3>
                 </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ProjectTaskId" />
+                        <input type="hidden" asp-for="UserId" />
+                        <input type="hidden" asp-for="DateAdded" />
 
-                <div class="d-flex gap-3">
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="bi bi-check-circle"></i> Salvează
-                    </button>
-                    <a asp-controller="Tasks" asp-action="Show" asp-route-id="@Model.ProjectTaskId" class="btn btn-secondary btn-lg">
-                        <i class="bi bi-x-circle"></i> Anulează
-                    </a>
+                        <div class="form-group">
+                            <label asp-for="Content" class="form-label">
+                                <i class="bi bi-chat-text"></i> Conținut Comentariu
+                            </label>
+                            <textarea asp-for="Content" class="form-control" rows="5" 
+                                      placeholder="Editează comentariul tău..." required></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Salvează
+                            </button>
+                            <a asp-controller="Tasks" asp-action="Show" asp-route-id="@Model.ProjectTaskId" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Anulează
+                            </a>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

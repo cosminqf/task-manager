@@ -1,6 +1,234 @@
 @model IEnumerable<TaskManager.Models.ProjectTask>
 
-@{ ViewData["Title"] = "Tasks List"; }
+@{ 
+    ViewData["Title"] = "Task-uri";
+    var notStarted = Model?.Where(t => t.Status == TaskManager.Models.TaskStatus.NotStarted).ToList() ?? new List<TaskManager.Models.ProjectTask>();
+    var inProgress = Model?.Where(t => t.Status == TaskManager.Models.TaskStatus.InProgress).ToList() ?? new List<TaskManager.Models.ProjectTask>();
+    var completed = Model?.Where(t => t.Status == TaskManager.Models.TaskStatus.Completed).ToList() ?? new List<TaskManager.Models.ProjectTask>();
+}
+
+<div class="container mt-4 mb-xl">
+    <div class="d-flex justify-content-between align-items-center mb-xl">
+        <div>
+            <h1 class="mb-sm"><i class="bi bi-list-check"></i> Toate Task-urile</h1>
+            <p class="text-muted">Gestionează și organizează toate task-urile tale</p>
+        </div>
+        <a asp-action="New" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Task Nou
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Tabs pentru View Mode -->
+    <div class="tabs mb-lg">
+        <button class="tab active" onclick="showView('cards')">
+            <i class="bi bi-grid-3x3"></i> Carduri
+        </button>
+        <button class="tab" onclick="showView('kanban')">
+            <i class="bi bi-kanban"></i> Kanban Board
+        </button>
+        <button class="tab" onclick="showView('list')">
+            <i class="bi bi-list-ul"></i> Listă
+        </button>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        ViewBag.Icon = "📝";
+        ViewBag.Title = "Nu există task-uri încă";
+        ViewBag.Description = "Creează primul tău task pentru a începe să organizezi munca.";
+        ViewBag.ActionText = "Creează Task";
+        ViewBag.ActionUrl = Url.Action("New");
+        
+        <partial name="_EmptyState" />
+    }
+    else
+    {
+        <!-- Cards View -->
+        <div id="cards-view">
+            <div class="row g-4">
+                @foreach (var task in Model.OrderBy(t => t.Status).ThenBy(t => t.EndDate))
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <partial name="_TaskCard" model="task" />
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Kanban Board View -->
+        <div id="kanban-view" style="display: none;">
+            <div class="kanban-board">
+                <!-- Not Started Column -->
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <span><i class="bi bi-circle"></i> Neîncepute</span>
+                        <span class="kanban-count">@notStarted.Count</span>
+                    </div>
+                    @if (!notStarted.Any())
+                    {
+                        <div class="empty-state p-md">
+                            <div class="empty-state-icon" style="font-size: 2rem;">📝</div>
+                            <p class="text-muted small mb-0">Niciun task</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var task in notStarted)
+                        {
+                            <div class="mb-md">
+                                <partial name="_TaskCard" model="task" />
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- In Progress Column -->
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <span><i class="bi bi-hourglass-split"></i> În Progres</span>
+                        <span class="kanban-count">@inProgress.Count</span>
+                    </div>
+                    @if (!inProgress.Any())
+                    {
+                        <div class="empty-state p-md">
+                            <div class="empty-state-icon" style="font-size: 2rem;">⏳</div>
+                            <p class="text-muted small mb-0">Niciun task</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var task in inProgress)
+                        {
+                            <div class="mb-md">
+                                <partial name="_TaskCard" model="task" />
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Completed Column -->
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <span><i class="bi bi-check-circle"></i> Finalizate</span>
+                        <span class="kanban-count">@completed.Count</span>
+                    </div>
+                    @if (!completed.Any())
+                    {
+                        <div class="empty-state p-md">
+                            <div class="empty-state-icon" style="font-size: 2rem;">✅</div>
+                            <p class="text-muted small mb-0">Niciun task</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var task in completed)
+                        {
+                            <div class="mb-md">
+                                <partial name="_TaskCard" model="task" />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div id="list-view" style="display: none;">
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Proiect</th>
+                                <th>Status</th>
+                                <th>Asignat</th>
+                                <th>Deadline</th>
+                                <th>Acțiuni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var task in Model.OrderBy(t => t.EndDate))
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@task.Title</strong>
+                                        <div class="small text-muted">@(task.Description?.Length > 50 ? task.Description.Substring(0, 50) + "..." : task.Description)</div>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Projects" asp-action="Details" asp-route-id="@task.ProjectId" class="text-decoration-none">
+                                            @task.Project?.Title
+                                        </a>
+                                    </td>
+                                    <td><partial name="_StatusBadge" model="task.Status" /></td>
+                                    <td>
+                                        @if (task.AssignedUser != null)
+                                        {
+                                            <div class="chip">
+                                                <span class="avatar avatar-sm">@task.AssignedUser.UserName?.Substring(0, 1).ToUpper()</span>
+                                                @task.AssignedUser.UserName
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var daysUntil = (task.EndDate - DateTime.Now).Days;
+                                            var isUrgent = daysUntil <= 2 && task.Status != TaskManager.Models.TaskStatus.Completed;
+                                        }
+                                        <span class="@(isUrgent ? "text-danger fw-bold" : "")">
+                                            @task.EndDate.ToString("dd MMM yyyy")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a asp-action="Show" asp-route-id="@task.Id" class="btn btn-sm btn-ghost" title="Vezi detalii" aria-label="Vezi detalii">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-sm btn-ghost" title="Editează" aria-label="Editează">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function showView(viewName) {
+            // Hide all views
+            document.getElementById('cards-view').style.display = 'none';
+            document.getElementById('kanban-view').style.display = 'none';
+            document.getElementById('list-view').style.display = 'none';
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected view
+            document.getElementById(viewName + '-view').style.display = 'block';
+            
+            // Add active to clicked tab
+            event.target.closest('.tab').classList.add('active');
+        }
+    </script>
+}
+
 
 <div class="container mt-5 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-5 fade-in-up">
@@ -21,11 +249,13 @@
     }
 
     <div class="row g-4">
-        @foreach (var task in Model)
+        @if (Model != null)
         {
-            <div class="col-md-4 fade-in-up">
-                <div class="task-card">
-                    @if (!string.IsNullOrEmpty(task.MediaUrl))
+            @foreach (var task in Model)
+            {
+                <div class="col-md-4 fade-in-up">
+                    <div class="task-card">
+                        @if (!string.IsNullOrEmpty(task.MediaUrl))
                     {
                         if (task.MediaUrl.StartsWith("/images/"))
                         {
@@ -139,6 +369,7 @@
                     </div>
                 </div>
             </div>
+            }
         }
     </div>
 </div>

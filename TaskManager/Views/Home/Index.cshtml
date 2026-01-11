@@ -1,53 +1,340 @@
 ﻿@{
-    ViewData["Title"] = "Welcome";
+    ViewData["Title"] = "Bun venit";
+    ViewData["ContainerFluid"] = true;
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 }
 
-<div class="px-4 py-5 my-5 text-center bg-light rounded-3 shadow-sm">
-    <h1 class="display-5 fw-bold text-primary">Organizeaza-ti viata cu TaskManager</h1>
-    <div class="col-lg-6 mx-auto">
-        <p class="lead mb-4">
-            Gestioneaza proiecte, urmareste progresul si colaboreaza cu echipa ta intr-un singur loc.
-            Simplu, rapid si eficient.
-        </p>
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-4 gap-3">Incepe Gratuit</a>
-            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary btn-lg px-4">Am deja cont</a>
+@section Styles {
+    <style>
+        .hero-section {
+            padding: var(--space-3xl) 0;
+            background: linear-gradient(135deg, var(--color-primary-bg) 0%, white 100%);
+        }
+        
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-primary-bg);
+            border-radius: var(--radius-xl);
+            font-size: 2rem;
+            margin-bottom: var(--space-lg);
+        }
+        
+        .social-proof {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--space-2xl);
+            flex-wrap: wrap;
+            padding: var(--space-2xl) 0;
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .testimonial-card {
+            background: white;
+            padding: var(--space-xl);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .step-number {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: var(--font-size-xl);
+            margin: 0 auto var(--space-md);
+        }
+    </style>
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-lg">
+                <h1 class="display-4 fw-bold mb-md" style="line-height: 1.2;">
+                    Organizează-ți proiectele<br />
+                    <span style="color: var(--color-primary);">cu ușurință</span>
+                </h1>
+                <p class="lead mb-xl" style="font-size: 1.25rem; color: var(--color-text);">
+                    TaskManager este platforma modernă care te ajută să gestionezi proiecte, 
+                    să atribui task-uri și să colaborezi eficient cu echipa ta.
+                </p>
+                
+                <div class="d-flex gap-3 mb-xl flex-wrap">
+                    @if (!isAuthenticated)
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg">
+                            <i class="bi bi-rocket-takeoff"></i> Începe Gratuit
+                        </a>
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Autentificare
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="bi bi-speedometer2"></i> Mergi la Dashboard
+                        </a>
+                        <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-folder"></i> Vezi Proiectele
+                        </a>
+                    }
+                </div>
+                
+                <div class="d-flex align-items-center gap-3 text-muted small">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    <span>Fără card necesar</span>
+                    <span>•</span>
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    <span>Setup în 2 minute</span>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div style="background: var(--color-primary-bg); border-radius: var(--radius-xl); padding: var(--space-3xl); text-align: center;">
+                    <div style="font-size: 8rem; opacity: 0.3;">📊</div>
+                    <p class="text-muted">TaskManager Dashboard Preview</p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="container px-4 py-5" id="features">
-    <h2 class="pb-2 border-bottom text-center">De ce sa alegi TaskManager?</h2>
-    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+<!-- Social Proof -->
+<section class="social-proof bg-white">
+    <div class="text-center">
+        <span class="badge badge-primary">Folosit de echipe performante</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-star-fill" style="color: var(--color-warning);"></i>
+        <i class="bi bi-star-fill" style="color: var(--color-warning);"></i>
+        <i class="bi bi-star-fill" style="color: var(--color-warning);"></i>
+        <i class="bi bi-star-fill" style="color: var(--color-warning);"></i>
+        <i class="bi bi-star-fill" style="color: var(--color-warning);"></i>
+        <span class="ms-2">4.9/5 rating</span>
+    </div>
+</section>
 
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-light text-dark flex-shrink-0 me-3 rounded p-2">
-                📂
+<!-- Features -->
+<section class="py-xl bg-secondary">
+    <div class="container">
+        <div class="text-center mb-xl">
+            <h2 class="display-6 fw-bold mb-md">Tot ce ai nevoie pentru succes</h2>
+            <p class="lead text-muted">Funcționalități concepute pentru productivitate maximă</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-icon">📂</div>
+                <h4 class="mb-md">Proiecte Nelimitate</h4>
+                <p class="text-muted">
+                    Creează și gestionează oricâte proiecte dorești. 
+                    Organizează-le pe categorii și păstrează totul structurat.
+                </p>
             </div>
-            <div>
-                <h3 class="fs-2">Proiecte Nelimitate</h3>
-                <p>Creeaza cate proiecte vrei si organizeaza task-urile pe categorii.</p>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-icon">✓</div>
+                <h4 class="mb-md">Task Management</h4>
+                <p class="text-muted">
+                    Creează task-uri cu titlu, descriere, deadline-uri și media (poze/video). 
+                    Trasează progresul cu statusuri clare.
+                </p>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-icon">👥</div>
+                <h4 class="mb-md">Colaborare în Echipă</h4>
+                <p class="text-muted">
+                    Adaugă membri în proiecte, atribuie task-uri și colaborează în timp real. 
+                    Toată echipa pe aceeași pagină.
+                </p>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-icon">💬</div>
+                <h4 class="mb-md">Sistem Comentarii</h4>
+                <p class="text-muted">
+                    Comunică direct pe task-uri. Lasă feedback, pune întrebări și 
+                    menține conversația organizată.
+                </p>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-icon">📊</div>
+                <h4 class="mb-md">Dashboard Personal</h4>
+                <p class="text-muted">
+                    Vizualizează toate task-urile tale, filtrate pe status și urgență. 
+                    Rămâi la curent cu deadline-urile.
+                </p>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-icon">🤖</div>
+                <h4 class="mb-md">AI Summary</h4>
+                <p class="text-muted">
+                    Generează rapoarte automate cu progresul proiectului. 
+                    Inteligență artificială la serviciul tău.
+                </p>
             </div>
         </div>
+    </div>
+</section>
 
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-light text-dark flex-shrink-0 me-3 rounded p-2">
-                🚀
+<!-- How It Works -->
+<section class="py-xl">
+    <div class="container">
+        <div class="text-center mb-xl">
+            <h2 class="display-6 fw-bold mb-md">Cum funcționează</h2>
+            <p class="lead text-muted">3 pași simpli pentru a începe</p>
+        </div>
+        
+        <div class="row g-5">
+            <div class="col-md-4 text-center">
+                <div class="step-number">1</div>
+                <h4 class="mb-md">Creează un Cont</h4>
+                <p class="text-muted">
+                    Înregistrează-te gratuit în câteva secunde. 
+                    Nu este nevoie de card.
+                </p>
             </div>
-            <div>
-                <h3 class="fs-2">Productivitate Maxima</h3>
-                <p>Urmarestre statusul fiecarui task (To Do, In Progress, Done) in real-time.</p>
+            
+            <div class="col-md-4 text-center">
+                <div class="step-number">2</div>
+                <h4 class="mb-md">Adaugă Proiecte & Task-uri</h4>
+                <p class="text-muted">
+                    Creează proiectele tale și structurează-le cu task-uri. 
+                    Invită echipa ta.
+                </p>
+            </div>
+            
+            <div class="col-md-4 text-center">
+                <div class="step-number">3</div>
+                <h4 class="mb-md">Colaborează & Finalizează</h4>
+                <p class="text-muted">
+                    Atribuie task-uri, comunică prin comentarii și 
+                    urmărește progresul în timp real.
+                </p>
             </div>
         </div>
+    </div>
+</section>
 
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-light text-dark flex-shrink-0 me-3 rounded p-2">
-                🔒
+<!-- Testimonials -->
+<section class="py-xl bg-secondary">
+    <div class="container">
+        <div class="text-center mb-xl">
+            <h2 class="display-6 fw-bold mb-md">Ce spun utilizatorii</h2>
+            <p class="lead text-muted">Mii de echipe au ales TaskManager</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="d-flex align-items-center mb-md">
+                        <span class="avatar me-2">AM</span>
+                        <div>
+                            <strong>Ana Maria</strong>
+                            <div class="text-muted small">Project Manager</div>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-md">
+                        "TaskManager ne-a transformat modul în care gestionăm proiectele. 
+                        Dashboard-ul este intuitiv și toate funcționalitățile sunt la un click distanță."
+                    </p>
+                    <div class="d-flex">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h3 class="fs-2">Securitate</h3>
-                <p>Datele tale sunt protejate. Doar tu ai acces la proiectele tale personale.</p>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="d-flex align-items-center mb-md">
+                        <span class="avatar me-2">IP</span>
+                        <div>
+                            <strong>Ion Popescu</strong>
+                            <div class="text-muted small">Developer</div>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-md">
+                        "Colaborarea cu echipa nu a fost niciodată mai ușoară. 
+                        Sistemul de comentarii și notificările ne țin pe toți sincronizați."
+                    </p>
+                    <div class="d-flex">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </div>
+                </div>
             </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="d-flex align-items-center mb-md">
+                        <span class="avatar me-2">MC</span>
+                        <div>
+                            <strong>Maria Constantin</strong>
+                            <div class="text-muted small">Team Lead</div>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-md">
+                        "Rapoartele AI sunt incredibile! Ne economisesc ore întregi de muncă și 
+                        ne oferă insights valoroase despre progresul proiectelor."
+                    </p>
+                    <div class="d-flex">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Final -->
+<section class="py-xl text-center" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: white;">
+    <div class="container">
+        <h2 class="display-5 fw-bold mb-md">Gata să începi?</h2>
+        <p class="lead mb-xl" style="opacity: 0.9;">
+            Alătură-te miilor de echipe care folosesc TaskManager pentru a-și îndeplini obiectivele.
+        </p>
+        
+        @if (!isAuthenticated)
+        {
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-lg" style="background: white; color: var(--color-primary); font-weight: 600;">
+                <i class="bi bi-rocket-takeoff"></i> Creează Cont Gratuit
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Projects" asp-action="Index" class="btn btn-lg" style="background: white; color: var(--color-primary); font-weight: 600;">
+                <i class="bi bi-folder"></i> Vezi Proiectele Tale
+            </a>
+        }
+    </div>
+</section>
+
         </div>
     </div>
 </div>

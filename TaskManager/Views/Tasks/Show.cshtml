@@ -1,6 +1,191 @@
 @model TaskManager.Models.ProjectTask
 
-@{ ViewData["Title"] = Model.Title; }
+@{ 
+    ViewData["Title"] = Model.Title;
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var canEdit = Model.AssignedUserId == currentUserId || User.IsInRole("Admin");
+}
+
+<div class="container mt-4 mb-xl">
+    <!-- Task Header Card -->
+    <div class="card mb-lg">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-md">
+                <div class="flex-grow-1">
+                    <h1 class="h2 mb-sm">@Model.Title</h1>
+                    <div class="d-flex align-items-center gap-3 text-muted small">
+                        <span>
+                            <i class="bi bi-folder"></i>
+                            <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId" class="text-decoration-none">
+                                @Model.Project?.Title
+                            </a>
+                        </span>
+                        @if (Model.AssignedUser != null)
+                        {
+                            <span>
+                                <i class="bi bi-person"></i> Asignat: <strong>@Model.AssignedUser.UserName</strong>
+                            </span>
+                        }
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <partial name="_StatusBadge" model="Model.Status" />
+                    @if (canEdit)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-pencil"></i> Editează
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Media Section -->
+            @if (!string.IsNullOrEmpty(Model.MediaUrl))
+            {
+                <div class="card mb-lg">
+                    <div class="card-body p-0">
+                        @if (Model.MediaUrl.Contains("youtube.com") || Model.MediaUrl.Contains("youtu.be") || Model.MediaUrl.Contains("vimeo.com"))
+                        {
+                            <div class="ratio ratio-16x9">
+                                <iframe src="@Model.MediaUrl" allowfullscreen style="border-radius: var(--radius-lg);"></iframe>
+                            </div>
+                        }
+                        else if (Model.MediaUrl.StartsWith("/") || Model.MediaUrl.StartsWith("http"))
+                        {
+                            <img src="@Model.MediaUrl" class="img-fluid w-100" alt="@Model.Title" 
+                                 style="border-radius: var(--radius-lg); max-height: 500px; object-fit: cover;" />
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Description -->
+            <div class="card mb-lg">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-file-text"></i> Descriere</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">@Model.Description</p>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card mb-lg">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Comentarii (@(Model.Comments?.Count ?? 0))</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add Comment Form -->
+                    <form asp-controller="Comments" asp-action="New" method="post" class="mb-lg">
+                        <input type="hidden" name="ProjectTaskId" value="@Model.Id" />
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="commentContent">Adaugă un comentariu</label>
+                            <textarea name="Content" id="commentContent" class="form-control" rows="3" 
+                                      placeholder="Scrie comentariul tău aici..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Postează Comentariu
+                        </button>
+                    </form>
+
+                    <!-- Comments List -->
+                    @if (Model.Comments != null && Model.Comments.Any())
+                    {
+                        @foreach (var comment in Model.Comments.OrderByDescending(c => c.DateAdded))
+                        {
+                            <partial name="_CommentItem" model="comment" />
+                        }
+                    }
+                    else
+                    {
+                        ViewBag.Icon = "💬";
+                        ViewBag.Title = "Niciun comentariu încă";
+                        ViewBag.Description = "Fii primul care adaugă un comentariu la acest task.";
+                        
+                        <partial name="_EmptyState" />
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Task Details -->
+            <div class="card mb-lg">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Detalii Task</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-md">
+                        <label class="small text-muted d-block mb-1">Data de Început</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-calendar-event text-primary"></i>
+                            <strong>@Model.StartDate.ToString("dd MMMM yyyy")</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-md">
+                        <label class="small text-muted d-block mb-1">Termen Limită</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-flag text-danger"></i>
+                            <strong>@Model.EndDate.ToString("dd MMMM yyyy")</strong>
+                        </div>
+                    </div>
+                    
+                    @if (Model.AssignedUser != null)
+                    {
+                        <div class="mb-md">
+                            <label class="small text-muted d-block mb-1">Asignat către</label>
+                            <div class="chip">
+                                <span class="avatar avatar-sm">@Model.AssignedUser.UserName?.Substring(0, 1).ToUpper()</span>
+                                @Model.AssignedUser.UserName
+                            </div>
+                        </div>
+                    }
+                    
+                    <div>
+                        <label class="small text-muted d-block mb-1">Status</label>
+                        <partial name="_StatusBadge" model="Model.Status" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-lightning"></i> Acțiuni Rapide</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-folder"></i> Vezi Proiectul
+                        </a>
+                        @if (canEdit)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                                <i class="bi bi-pencil"></i> Editează Task-ul
+                            </a>
+                            <form asp-action="Delete" method="post">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm w-100" 
+                                        onclick="return confirm('Sigur doriți să ștergeți acest task?');">
+                                    <i class="bi bi-trash"></i> Șterge Task-ul
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="container mt-5 mb-5">
     <div class="task-container fade-in-up">

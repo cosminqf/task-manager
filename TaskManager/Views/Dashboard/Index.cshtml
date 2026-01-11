@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Dashboard";
+    var notStartedTasks = Model?.Where(t => t.Status == TaskManager.Models.TaskStatus.NotStarted).ToList() ?? new List<TaskManager.Models.ProjectTask>();
+    var inProgressTasks = Model?.Where(t => t.Status == TaskManager.Models.TaskStatus.InProgress).ToList() ?? new List<TaskManager.Models.ProjectTask>();
+    var completedTasks = Model?.Where(t => t.Status == TaskManager.Models.TaskStatus.Completed).ToList() ?? new List<TaskManager.Models.ProjectTask>();
 }
 
 @section Styles {
@@ -9,178 +12,217 @@
 }
 
 <div class="container mt-5 mb-5">
-    <div class="dashboard-header mb-5">
-        <div class="welcome-section">
-            <h1>👋 Salut, @User.Identity?.Name!</h1>
-            <p class="lead text-muted">Ai o privire de ansamblu asupra activitatii tale.</p>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100 border-0 border-start border-4 border-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted text-uppercase mb-0">Total Task-uri</h6>
-                        <div class="icon-shape bg-primary text-white rounded-circle p-2">
-                            <i class="bi bi-list-task"></i>
-                        </div>
-                    </div>
-                    <h2 class="mb-0">@ViewBag.TotalTasks</h2>
-                </div>
+    <div class="dashboard-header mb-xl">
+        <div class="d-flex justify-content-between align-items-center mb-md">
+            <div>
+                <h1 class="mb-sm">👋 Salut, @User.Identity?.Name!</h1>
+                <p class="lead text-muted mb-0">Ai o privire de ansamblu asupra activității tale.</p>
             </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100 border-0 border-start border-4 border-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted text-uppercase mb-0">Active</h6>
-                        <div class="icon-shape bg-warning text-dark rounded-circle p-2">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                    <h2 class="mb-0">@ViewBag.ActiveTasks</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100 border-0 border-start border-4 border-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted text-uppercase mb-0">Finalizate</h6>
-                        <div class="icon-shape bg-success text-white rounded-circle p-2">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                    <h2 class="mb-0">@ViewBag.CompletedTasks</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100 border-0 border-start border-4 border-danger">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted text-uppercase mb-0">Urgente</h6>
-                        <div class="icon-shape bg-danger text-white rounded-circle p-2">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                    </div>
-                    <h2 class="mb-0">@ViewBag.UrgentTasks</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-5">
-        <div class="col-12">
-            <h3 class="mb-3">Acces Rapid</h3>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="bg-primary text-white rounded p-3 me-3">
-                        <i class="bi bi-folder-fill fs-3"></i>
-                    </div>
-                    <div>
-                        <h5 class="card-title">Proiecte</h5>
-                        <p class="card-text text-muted mb-2">Gestioneaza proiectele si structura lor.</p>
-                        <a asp-controller="Projects" asp-action="Index" class="btn btn-sm btn-outline-primary">Mergi la Proiecte</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="bg-info text-white rounded p-3 me-3">
-                        <i class="bi bi-people-fill fs-3"></i>
-                    </div>
-                    <div>
-                        <h5 class="card-title">Echipa</h5>
-                        <p class="card-text text-muted mb-2">Vezi membrii echipei si colaboreaza.</p>
-                        <a href="#" class="btn btn-sm btn-outline-info">Vezi Echipa</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-12 d-flex gap-2">
-            <a asp-action="Index" class="btn @(ViewBag.CurrentFilter == null ? "btn-primary" : "btn-outline-primary")">
-                Toate
-            </a>
-            <a asp-action="Index" asp-route-filter="completed" class="btn @(ViewBag.CurrentFilter == "completed" ? "btn-success" : "btn-outline-success")">
-                Finalizate
-            </a>
-            <a asp-action="Index" asp-route-filter="urgent" class="btn @(ViewBag.CurrentFilter == "urgent" ? "btn-danger" : "btn-outline-danger")">
-                Urgente
+            <a asp-controller="Projects" asp-action="Index" class="btn btn-primary">
+                <i class="bi bi-folder-plus"></i> Proiect Nou
             </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <h3 class="mb-4"><i class="bi bi-kanban"></i> Task-urile Mele</h3>
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-xl">
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card dashboard-card">
+                <span class="stat-number">@ViewBag.TotalTasks</span>
+                <span class="stat-label">
+                    <i class="bi bi-list-task"></i> Total Task-uri
+                </span>
+            </div>
+        </div>
 
-            @if (Model == null || Model.Count == 0)
-            {
-                <div class="alert alert-light border text-center p-5">
-                    <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                    <h5>Nu ai task-uri atribuite momentan.</h5>
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card dashboard-card">
+                <span class="stat-number" style="color: var(--color-warning);">@ViewBag.ActiveTasks</span>
+                <span class="stat-label">
+                    <i class="bi bi-hourglass-split"></i> Active
+                </span>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card dashboard-card">
+                <span class="stat-number" style="color: var(--color-success);">@ViewBag.CompletedTasks</span>
+                <span class="stat-label">
+                    <i class="bi bi-check-circle"></i> Finalizate
+                </span>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card dashboard-card">
+                <span class="stat-number" style="color: var(--color-danger);">@ViewBag.UrgentTasks</span>
+                <span class="stat-label">
+                    <i class="bi bi-exclamation-triangle"></i> Urgente
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+
+    @if (Model == null || Model.Count == 0)
+    {
+        ViewBag.Icon = "📋";
+        ViewBag.Title = "Nu ai task-uri atribuite";
+        ViewBag.Description = "Momentan nu există task-uri atribuite ție. Verifică proiectele tale pentru a vedea task-urile disponibile.";
+        ViewBag.ActionText = "Vezi Proiectele";
+        ViewBag.ActionUrl = Url.Action("Index", "Projects");
+        
+        <partial name="_EmptyState" />
+    }
+    else
+    {
+        <!-- Kanban Board View -->
+        <div class="kanban-board mb-xl">
+            <!-- Not Started Column -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-circle"></i> Neîncepute</span>
+                    <span class="kanban-count">@notStartedTasks.Count</span>
                 </div>
-            }
-            else
-            {
-                <div class="row g-4">
-                    @foreach (var task in Model)
+                @if (!notStartedTasks.Any())
+                {
+                    <div class="empty-state p-md">
+                        <div class="empty-state-icon" style="font-size: 2rem;">📝</div>
+                        <p class="text-muted small mb-0">Niciun task</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var task in notStartedTasks.Take(5))
                     {
-                        var isUrgent = task.EndDate <= DateTime.Now.AddDays(1) && task.Status != TaskManager.Models.TaskStatus.Completed;
+                        <div class="mb-md">
+                            <partial name="_TaskCard" model="task" />
+                        </div>
+                    }
+                    @if (notStartedTasks.Count > 5)
+                    {
+                        <p class="text-center text-muted small">+@(notStartedTasks.Count - 5) mai multe</p>
+                    }
+                }
+            </div>
 
-                        <div class="col-md-6 col-lg-4">
-                            <div class="card h-100 shadow-sm @(isUrgent ? "border-danger" : "")">
-                                <div class="card-body">
-                                    @if (isUrgent)
-                                    {
-                                        <div class="badge bg-danger mb-2">URGENT</div>
-                                    }
-                                    <h5 class="card-title">@task.Title</h5>
-                                    <p class="card-text text-muted small">
-                                        @if (!string.IsNullOrEmpty(task.Description) && task.Description.Length > 80)
-                                        {
-                                            @task.Description.Substring(0, 80) <text>...</text>
-                                        }
-                                        else
-                                        {
-                                            @task.Description
-                                        }
-                                </p>
+            <!-- In Progress Column -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-hourglass-split"></i> În Progres</span>
+                    <span class="kanban-count">@inProgressTasks.Count</span>
+                </div>
+                @if (!inProgressTasks.Any())
+                {
+                    <div class="empty-state p-md">
+                        <div class="empty-state-icon" style="font-size: 2rem;">⏳</div>
+                        <p class="text-muted small mb-0">Niciun task</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var task in inProgressTasks.Take(5))
+                    {
+                        <div class="mb-md">
+                            <partial name="_TaskCard" model="task" />
+                        </div>
+                    }
+                    @if (inProgressTasks.Count > 5)
+                    {
+                        <p class="text-center text-muted small">+@(inProgressTasks.Count - 5) mai multe</p>
+                    }
+                }
+            </div>
 
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="badge rounded-pill
-                                                @(task.Status == TaskManager.Models.TaskStatus.Completed ? "bg-success" :
-                                                                                        task.Status == TaskManager.Models.TaskStatus.InProgress ? "bg-warning text-dark" : "bg-secondary")">
-                                            @task.Status
-                                        </span>
-                                        <small class="text-muted">
-                                            <i class="bi bi-calendar"></i> @task.EndDate.ToString("dd MMM")
-                                        </small>
+            <!-- Completed Column -->
+            <div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span><i class="bi bi-check-circle"></i> Finalizate</span>
+                    <span class="kanban-count">@completedTasks.Count</span>
+                </div>
+                @if (!completedTasks.Any())
+                {
+                    <div class="empty-state p-md">
+                        <div class="empty-state-icon" style="font-size: 2rem;">✅</div>
+                        <p class="text-muted small mb-0">Niciun task</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var task in completedTasks.Take(5))
+                    {
+                        <div class="mb-md">
+                            <partial name="_TaskCard" model="task" />
+                        </div>
+                    }
+                    @if (completedTasks.Count > 5)
+                    {
+                        <p class="text-center text-muted small">+@(completedTasks.Count - 5) mai multe</p>
+                    }
+                }
+            </div>
+        </div>
+    }
+    
+    <!-- Deadline-uri Apropiate -->
+    @if (Model != null && Model.Any())
+    {
+        var upcomingTasks = Model.Where(t => 
+            t.Status != TaskManager.Models.TaskStatus.Completed && 
+            t.EndDate >= DateTime.Now && 
+            t.EndDate <= DateTime.Now.AddDays(7))
+            .OrderBy(t => t.EndDate)
+            .Take(5)
+            .ToList();
+        
+        if (upcomingTasks.Any())
+        {
+            <div class="card mb-lg">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Deadline-uri Apropiate (următoarele 7 zile)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var task in upcomingTasks)
+                        {
+                            var daysUntil = (task.EndDate - DateTime.Now).Days;
+                            var isUrgent = daysUntil <= 2;
+                            
+                            <div class="list-group-item px-0 border-start-0 border-end-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <a asp-controller="Tasks" asp-action="Show" asp-route-id="@task.Id" class="text-decoration-none">
+                                            <strong>@task.Title</strong>
+                                        </a>
+                                        <div class="small text-muted">
+                                            @task.Project?.Title
+                                        </div>
                                     </div>
-
-                                    <div class="mt-3 text-end">
-                                        <a asp-controller="Tasks" asp-action="Show" asp-route-id="@task.Id" class="btn btn-sm btn-outline-primary">Detalii</a>
+                                    <div class="text-end">
+                                        <partial name="_StatusBadge" model="task.Status" />
+                                        <div class="@(isUrgent ? "text-danger fw-bold" : "text-muted") small mt-1">
+                                            <i class="bi bi-calendar"></i>
+                                            @if (daysUntil == 0)
+                                            {
+                                                <span>Astăzi</span>
+                                            }
+                                            else if (daysUntil == 1)
+                                            {
+                                                <span>Mâine</span>
+                                            }
+                                            else
+                                            {
+                                                <span>În @daysUntil zile</span>
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
-            }
-        </div>
-    </div>
+            </div>
+        }
+    }
 </div>

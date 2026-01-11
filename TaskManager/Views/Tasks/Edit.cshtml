@@ -1,112 +1,162 @@
 @model TaskManager.Models.ProjectTask
 
-@{ ViewData["Title"] = "Editează Task"; }
+@{ 
+    ViewData["Title"] = "Editează Task"; 
+    var isOrganizer = ViewBag.IsOrganizer ?? false;
+}
 
 <div class="container mt-5 mb-5">
     <div class="task-container fade-in-up">
         <div class="task-header">
             <h2>
-                <i class="bi bi-pencil-square"></i> Editează Task: @Model.Title
+                <i class="bi bi-pencil-square"></i> @(isOrganizer ? "Editează Task" : "Modifică Status Task"): @Model.Title
             </h2>
         </div>
         
         <form asp-action="Edit" method="post" enctype="multipart/form-data">
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="MediaUrl" /> 
+            <input type="hidden" asp-for="ProjectId" />
 
-            <div class="mb-4">
-                <label asp-for="Title" class="form-label">
-                    <i class="bi bi-card-heading"></i> Titlu Task
-                </label>
-                <input asp-for="Title" class="form-control" placeholder="Introdu titlul task-ului" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-
-            <div class="mb-4">
-                <label asp-for="Description" class="form-label">
-                    <i class="bi bi-file-text"></i> Descriere
-                </label>
-                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Descrie task-ul în detaliu..."></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <label asp-for="StartDate" class="form-label">
-                        <i class="bi bi-calendar-event"></i> Data de Început
-                    </label>
-                    <input asp-for="StartDate" type="date" class="form-control" />
-                    <span asp-validation-for="StartDate" class="text-danger"></span>
+            @if (!isOrganizer)
+            {
+                <!-- Membrii văd doar statusul editabil -->
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle"></i> <strong>Notă:</strong> Poți modifica doar statusul acestui task. Pentru modificări complete, contactează organizatorul proiectului.
                 </div>
-                <div class="col-md-6">
-                    <label asp-for="EndDate" class="form-label">
-                        <i class="bi bi-flag-fill"></i> Termen Limită
-                    </label>
-                    <input asp-for="EndDate" type="date" class="form-control" />
-                    <span asp-validation-for="EndDate" class="text-danger"></span>
+
+                <!-- Câmpuri read-only pentru membri -->
+                <input type="hidden" asp-for="Title" />
+                <input type="hidden" asp-for="Description" />
+                <input type="hidden" asp-for="StartDate" />
+                <input type="hidden" asp-for="EndDate" />
+                <input type="hidden" asp-for="AssignedUserId" />
+
+                <div class="mb-4">
+                    <label class="form-label"><i class="bi bi-card-heading"></i> Titlu Task</label>
+                    <input value="@Model.Title" class="form-control" readonly />
                 </div>
-            </div>
 
-            <div class="mb-4">
-                <label asp-for="AssignedUserId" class="form-label">
-                    <i class="bi bi-person-fill"></i> Atribuit lui
-                </label>
-                <select asp-for="AssignedUserId" class="form-select" asp-items="ViewBag.UsersList">
-                    <option value="">Neatribuit</option>
-                </select>
-                <span asp-validation-for="AssignedUserId" class="text-danger"></span>
-            </div>
+                <div class="mb-4">
+                    <label class="form-label"><i class="bi bi-file-text"></i> Descriere</label>
+                    <textarea class="form-control" rows="5" readonly>@Model.Description</textarea>
+                </div>
 
-            <div class="mb-4">
-                <label asp-for="Status" class="form-label">
-                    <i class="bi bi-list-check"></i> Status
-                </label>
-                <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskManager.Models.TaskStatus>()"></select>
-            </div>
-
-            <div class="media-upload-section">
-                <h5>
-                    <i class="bi bi-camera"></i> Modifică Media
-                </h5>
-                @if(!string.IsNullOrEmpty(Model.MediaUrl))
-                {
-                    <div class="alert alert-info" style="border-radius: 10px;">
-                        <i class="bi bi-info-circle"></i> <strong>Media curentă:</strong> 
-                        @if(Model.MediaUrl.StartsWith("/images/"))
-                        {
-                            <span>Imagine încărcată</span>
-                            <img src="@Model.MediaUrl" class="img-thumbnail mt-2" style="max-height: 100px;" />
-                        }
-                        else
-                        {
-                            <span>Video YouTube</span>
-                        }
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-calendar-event"></i> Data de Început</label>
+                        <input value="@Model.StartDate.ToString("yyyy-MM-dd")" type="date" class="form-control" readonly />
                     </div>
-                }
-                
-                <div class="mb-3">
-                    <label class="form-label">
-                        <i class="bi bi-image"></i> Încarcă o imagine nouă (va înlocui media curentă)
-                    </label>
-                    <input asp-for="TaskImage" type="file" class="form-control" accept="image/*" />
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-flag-fill"></i> Termen Limită</label>
+                        <input value="@Model.EndDate.ToString("yyyy-MM-dd")" type="date" class="form-control" readonly />
+                    </div>
                 </div>
-                
-                <div class="text-center fw-bold text-muted my-3">- SAU -</div>
-                
-                <div class="mb-3">
-                    <label class="form-label">
-                        <i class="bi bi-youtube"></i> Link YouTube nou
+
+                <div class="mb-4">
+                    <label asp-for="Status" class="form-label">
+                        <i class="bi bi-list-check"></i> Status (Editabil)
                     </label>
-                    <input asp-for="MediaUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
-                    <small class="text-muted">Lasă gol pentru a păstra media curentă</small>
+                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskManager.Models.TaskStatus>()"></select>
                 </div>
-            </div>
+            }
+            else
+            {
+                <!-- Organizatorii pot edita totul -->
+                <div class="mb-4">
+                    <label asp-for="Title" class="form-label">
+                        <i class="bi bi-card-heading"></i> Titlu Task
+                    </label>
+                    <input asp-for="Title" class="form-control" placeholder="Introdu titlul task-ului" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label">
+                        <i class="bi bi-file-text"></i> Descriere
+                    </label>
+                    <textarea asp-for="Description" class="form-control" rows="5" placeholder="Descrie task-ul în detaliu..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="StartDate" class="form-label">
+                            <i class="bi bi-calendar-event"></i> Data de Început
+                        </label>
+                        <input asp-for="StartDate" type="date" class="form-control" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EndDate" class="form-label">
+                            <i class="bi bi-flag-fill"></i> Termen Limită
+                        </label>
+                        <input asp-for="EndDate" type="date" class="form-control" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="AssignedUserId" class="form-label">
+                        <i class="bi bi-person-fill"></i> Atribuit lui
+                    </label>
+                    <select asp-for="AssignedUserId" class="form-select" asp-items="ViewBag.UsersList">
+                        <option value="">Neatribuit</option>
+                    </select>
+                    <span asp-validation-for="AssignedUserId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Status" class="form-label">
+                        <i class="bi bi-list-check"></i> Status
+                    </label>
+                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskManager.Models.TaskStatus>()"></select>
+                </div>
+
+                <div class="media-upload-section">
+                    <h5>
+                        <i class="bi bi-camera"></i> Modifică Media
+                    </h5>
+                    @if(!string.IsNullOrEmpty(Model.MediaUrl))
+                    {
+                        <div class="alert alert-info" style="border-radius: 10px;">
+                            <i class="bi bi-info-circle"></i> <strong>Media curentă:</strong> 
+                            @if(Model.MediaUrl.StartsWith("/images/"))
+                            {
+                                <span>Imagine încărcată</span>
+                                <img src="@Model.MediaUrl" class="img-thumbnail mt-2" style="max-height: 100px;" />
+                            }
+                            else
+                            {
+                                <span>Video YouTube</span>
+                            }
+                        </div>
+                    }
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-image"></i> Încarcă o imagine nouă (va înlocui media curentă)
+                        </label>
+                        <input asp-for="TaskImage" type="file" class="form-control" accept="image/*" />
+                    </div>
+                    
+                    <div class="text-center fw-bold text-muted my-3">- SAU -</div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-youtube"></i> Link YouTube nou
+                        </label>
+                        <input asp-for="MediaUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+                        <small class="text-muted">Lasă gol pentru a păstra media curentă</small>
+                    </div>
+                </div>
+            }
 
             <div class="d-flex gap-3 mt-4">
                 <button type="submit" class="btn btn-success-custom btn-action btn-lg">
                     <i class="bi bi-check-circle"></i> Salvează Modificările
                 </button>
-                <a asp-action="Index" class="btn btn-secondary-custom btn-action btn-lg">
+                <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId" class="btn btn-secondary-custom btn-action btn-lg">
                     <i class="bi bi-x-circle"></i> Anulează
                 </a>
             </div>

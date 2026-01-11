@@ -4,47 +4,103 @@
     ViewData["Title"] = "Toate Proiectele";
 }
 
-<div class="container mt-4">
-    <h2 class="text-danger"><i class="bi bi-folder-fill"></i> Administrare Proiecte</h2>
-    <hr />
-
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover align-middle mb-0 bg-white">
-            <thead class="bg-light">
-                <tr>
-                    <th>Titlu Proiect</th>
-                    <th>Creat de</th>
-                    <th>Data</th>
-                    <th>Membri</th>
-                    <th class="text-end">Acțiuni</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td class="fw-bold">@item.Title</td>
-                        <td>
-                            <span class="badge bg-info text-dark">@item.Creator?.UserName</span>
-                        </td>
-                        <td>@item.DateCreated.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            <span class="badge bg-secondary">@item.Members.Count</span>
-                        </td>
-                        <td class="text-end">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<div class="container mt-4 mb-xl">
+    <div class="d-flex justify-content-between align-items-center mb-xl">
+        <div>
+            <h1 class="mb-sm">
+                <i class="bi bi-shield-lock text-danger"></i> Administrare Proiecte
+            </h1>
+            <p class="text-muted">Panou de administrare pentru gestionarea tuturor proiectelor din sistem</p>
+        </div>
     </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        ViewBag.Icon = "📂";
+        ViewBag.Title = "Nu există proiecte în sistem";
+        ViewBag.Description = "Nu au fost create încă proiecte în platformă.";
+        
+        <partial name="_EmptyState" />
+    }
+    else
+    {
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Proiect</th>
+                            <th>Creator</th>
+                            <th>Data Creării</th>
+                            <th>Membri</th>
+                            <th>Task-uri</th>
+                            <th class="text-end">Acțiuni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none">
+                                        <strong>@item.Title</strong>
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(item.Description))
+                                    {
+                                        <div class="small text-muted">
+                                            @(item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="avatar avatar-sm">@(item.Creator?.UserName?.Substring(0, 1).ToUpper() ?? "?")</span>
+                                        <span>@(item.Creator?.UserName ?? "Unknown")</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i>
+                                        @item.DateCreated.ToString("dd MMM yyyy")
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary">
+                                        <i class="bi bi-people"></i> @(item.Members?.Count ?? 0)
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">
+                                        <i class="bi bi-list-check"></i> @(item.ProjectTasks?.Count ?? 0)
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-secondary btn-sm" title="Vezi detalii">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-ghost btn-sm" title="Editează">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-ghost btn-sm text-danger" 
+                                                    onclick="return confirm('ATENȚIE: Ștergerea proiectului va elimina toate task-urile asociate. Sigur doriți să continuați?');"
+                                                    title="Șterge">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="alert alert-warning mt-lg">
+            <i class="bi bi-exclamation-triangle"></i> <strong>Notă:</strong> 
+            Ca administrator, ai acces complet la toate proiectele. Modificările sunt permanente.
+        </div>
+    }
 </div>

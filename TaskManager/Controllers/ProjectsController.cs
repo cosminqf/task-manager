@@ -25,7 +25,6 @@ namespace TaskManager.Controllers
             var userId = _userManager.GetUserId(User);
             var projects = await _context.Projects
                 .Include(p => p.Members)
-                .Include(p => p.Creator)
                 .Where(p => p.CreatorId == userId || p.Members.Any(m => m.Id == userId))
                 .ToListAsync();
             return View(projects);
@@ -34,11 +33,12 @@ namespace TaskManager.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AdminIndex()
         {
-            var allProjects = await _context.Projects
-                .Include(p => p.Members)
+            var projects = await _context.Projects
                 .Include(p => p.Creator)
+                .Include(p => p.Members)
+                .OrderByDescending(p => p.DateCreated)
                 .ToListAsync();
-            return View(allProjects);
+            return View(projects);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -49,6 +49,7 @@ namespace TaskManager.Controllers
                 .Include(p => p.Creator)
                 .Include(p => p.Members)
                 .Include(p => p.ProjectTasks)
+                    .ThenInclude(t => t.AssignedUser) // Include și utilizatorul asignat
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (project == null) return NotFound();
@@ -65,7 +66,7 @@ namespace TaskManager.Controllers
         public async Task<IActionResult> Create(Project project)
         {
             var userId = _userManager.GetUserId(User);
-            project.CreatorId = userId;
+            project.CreatorId = userId!;
 
             ModelState.Remove("Creator");
             ModelState.Remove("CreatorId");
@@ -87,8 +88,7 @@ namespace TaskManager.Controllers
             if (project == null) return NotFound();
 
             var userId = _userManager.GetUserId(User);
-
-            if (project.CreatorId != userId && !User.IsInRole("Admin")) return Forbid();
+            if (project.CreatorId != userId) return Forbid();
 
             return View(project);
         }
@@ -102,8 +102,7 @@ namespace TaskManager.Controllers
             var existingProject = await _context.Projects.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
 
             if (existingProject == null) return NotFound();
-
-            if (existingProject.CreatorId != userId && !User.IsInRole("Admin")) return Forbid();
+            if (existingProject.CreatorId != userId) return Forbid();
 
             project.CreatorId = existingProject.CreatorId;
             project.DateCreated = existingProject.DateCreated;
@@ -131,8 +130,7 @@ namespace TaskManager.Controllers
             if (project == null) return NotFound();
 
             var userId = _userManager.GetUserId(User);
-
-            if (project.CreatorId != userId && !User.IsInRole("Admin")) return Forbid();
+            if (project.CreatorId != userId) return Forbid();
 
             return View(project);
         }
@@ -143,10 +141,6 @@ namespace TaskManager.Controllers
             var project = await _context.Projects.FindAsync(id);
             if (project != null)
             {
-                var userId = _userManager.GetUserId(User);
-
-                if (project.CreatorId != userId && !User.IsInRole("Admin")) return Forbid();
-
                 _context.Projects.Remove(project);
                 await _context.SaveChangesAsync();
             }
@@ -160,8 +154,7 @@ namespace TaskManager.Controllers
             if (project == null) return NotFound();
 
             var currentUserId = _userManager.GetUserId(User);
-
-            if (project.CreatorId != currentUserId && !User.IsInRole("Admin")) return Forbid();
+            if (project.CreatorId != currentUserId) return Forbid();
 
             var userToAdd = await _userManager.FindByEmailAsync(email);
 
@@ -186,8 +179,7 @@ namespace TaskManager.Controllers
             if (project == null) return NotFound();
 
             var currentUserId = _userManager.GetUserId(User);
-
-            if (project.CreatorId != currentUserId && !User.IsInRole("Admin")) return Forbid();
+            if (project.CreatorId != currentUserId) return Forbid();
 
             var userToRemove = project.Members.FirstOrDefault(u => u.Id == userId);
             if (userToRemove != null)
@@ -195,10 +187,6 @@ namespace TaskManager.Controllers
                 project.Members.Remove(userToRemove);
                 await _context.SaveChangesAsync();
                 TempData["Message"] = "Membru sters din proiect.";
-            }
-            else
-            {
-                TempData["Error"] = "Membru nu a fost gasit.";
             }
 
             return RedirectToAction(nameof(Details), new { id = projectId });

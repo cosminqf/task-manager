@@ -4,59 +4,99 @@
     ViewData["Title"] = "Gestionare Utilizatori";
 }
 
-<div class="container mt-4">
-    <h2><i class="bi bi-people-fill"></i> Gestionare Utilizatori</h2>
-    <hr />
-
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover align-middle mb-0 bg-white">
-            <thead class="bg-light">
-                <tr>
-                    <th>Utilizator</th>
-                    <th>Email</th>
-                    <th>Status</th>
-                    <th class="text-end">Acțiuni</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var user in Model)
-                {
-                    <tr class="@(user.IsBanned ? "table-danger" : "")">
-                        <td>
-                            <div class="fw-bold">@user.UserName</div>
-                            <small class="text-muted">ID: @user.Id</small>
-                        </td>
-                        <td>@user.Email</td>
-                        <td>
-                            @if (user.IsBanned)
-                            {
-                                <span class="badge bg-dark">BANNED</span>
-                            }
-                            else if (user.IsAdmin)
-                            {
-                                <span class="badge bg-danger">ADMIN</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-success">Membru</span>
-                            }
-                        </td>
-                        <td class="text-end">
-                            <form asp-action="ToggleBan" asp-route-id="@user.Id" method="post" style="display:inline-block">
-                                <button type="submit" class="btn btn-sm @(user.IsBanned ? "btn-success" : "btn-dark")">
-                                    @(user.IsBanned ? "Debaneaza" : "Baneaza")
-                                </button>
-                            </form>
-
-                            <form asp-action="Delete" asp-route-id="@user.Id" method="post" style="display:inline-block" onsubmit="return confirm('Esti sigur ca vrei sa stergi acest utilizator?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger ms-1">
-                                    <i class="bi bi-trash"></i> Sterge
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<div class="container mt-4 mb-xl">
+    <div class="d-flex justify-content-between align-items-center mb-xl">
+        <div>
+            <h1 class="mb-sm">
+                <i class="bi bi-shield-lock text-danger"></i> Gestionare Utilizatori
+            </h1>
+            <p class="text-muted">Panou de administrare pentru managementul utilizatorilor</p>
+        </div>
     </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        ViewBag.Icon = "👥";
+        ViewBag.Title = "Nu există utilizatori";
+        ViewBag.Description = "Nu au fost găsiți utilizatori în sistem.";
+        
+        <partial name="_EmptyState" />
+    }
+    else
+    {
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Utilizator</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th class="text-end">Acțiuni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="avatar">@(user.UserName?.Substring(0, 1).ToUpper() ?? "U")</span>
+                                        <div>
+                                            <strong>@user.UserName</strong>
+                                            <div class="small text-muted">ID: @user.Id.Substring(0, 8)...</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>
+                                    @if (user.IsBanned)
+                                    {
+                                        <span class="badge badge-danger">
+                                            <i class="bi bi-ban"></i> BANNED
+                                        </span>
+                                    }
+                                    else if (user.IsAdmin)
+                                    {
+                                        <span class="badge badge-danger">
+                                            <i class="bi bi-shield-check"></i> ADMIN
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-success">
+                                            <i class="bi bi-person-check"></i> Membru
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <form asp-action="ToggleBan" asp-route-id="@user.Id" method="post" style="display:inline-block">
+                                            <button type="submit" class="btn btn-sm @(user.IsBanned ? "btn-success" : "btn-warning")" 
+                                                    onclick="return confirm('@(user.IsBanned ? "Sigur doriți să deblocați" : "Sigur doriți să blocați") acest utilizator?');">
+                                                <i class="bi bi-@(user.IsBanned ? "check-circle" : "ban")"></i>
+                                                @(user.IsBanned ? "Deblochează" : "Blochează")
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="Delete" asp-route-id="@user.Id" method="post" style="display:inline-block" 
+                                              onsubmit="return confirm('ATENȚIE: Ștergerea utilizatorului este permanentă. Sigur doriți să continuați?');">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i> Șterge
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="alert alert-warning mt-lg">
+            <i class="bi bi-exclamation-triangle"></i> <strong>Notă:</strong> 
+            Operațiunile de administrare sunt permanente și pot afecta funcționarea platformei. Utilizați cu atenție.
+        </div>
+    }
 </div>

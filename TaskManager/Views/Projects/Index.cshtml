@@ -4,36 +4,97 @@
     ViewData["Title"] = "Proiecte";
 }
 
-<h1>Proiectele Mele</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-xl">
+        <div>
+            <h1 class="mb-sm"><i class="bi bi-folder"></i> Proiectele Mele</h1>
+            <p class="text-muted">Gestionează-ți proiectele și colaborează cu echipa ta</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-folder-plus"></i> Proiect Nou
+        </a>
+    </div>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Adauga Proiect Nou</a>
-</p>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Titlu</th>
-            <th>Descriere</th>
-            <th>Data Crearii</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.Id" class="fw-bold text-decoration-none">
-                        @Html.DisplayFor(modelItem => item.Title)
-                    </a>
-                </td>
-                <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                <td>@item.DateCreated.ToString("dd/MM/yyyy")</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">Vezi Proiect</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    @if (Model == null || !Model.Any())
+    {
+        ViewBag.Icon = "📂";
+        ViewBag.Title = "Nu ai creat încă proiecte";
+        ViewBag.Description = "Creează primul tău proiect pentru a începe să organizezi task-urile și să colaborezi cu echipa ta.";
+        ViewBag.ActionText = "Creează Proiect";
+        ViewBag.ActionUrl = Url.Action("Create");
+        
+        <partial name="_EmptyState" />
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var project in Model)
+            {
+                var taskCount = project.ProjectTasks?.Count ?? 0;
+                var completedTasks = project.ProjectTasks?.Count(t => t.Status == TaskManager.Models.TaskStatus.Completed) ?? 0;
+                var memberCount = project.Members?.Count ?? 0;
+                var progressPercent = taskCount > 0 ? (int)((double)completedTasks / taskCount * 100) : 0;
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 fade-in">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-md">
+                                <h5 class="card-title mb-0">
+                                    <a asp-action="Details" asp-route-id="@project.Id" class="text-decoration-none text-dark">
+                                        @project.Title
+                                    </a>
+                                </h5>
+                                <span class="badge badge-primary">@taskCount tasks</span>
+                            </div>
+                            
+                            <p class="text-muted small mb-md">
+                                @(project.Description?.Length > 80 
+                                    ? project.Description.Substring(0, 80) + "..." 
+                                    : project.Description)
+                            </p>
+                            
+                            @if (taskCount > 0)
+                            {
+                                <div class="mb-md">
+                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                        <span>Progres</span>
+                                        <span>@completedTasks/@taskCount</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: @progressPercent%; background-color: var(--color-success);" 
+                                             aria-valuenow="@progressPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            }
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-md small text-muted">
+                                <span>
+                                    <i class="bi bi-person-circle"></i> @project.Creator?.UserName
+                                </span>
+                                <span>
+                                    <i class="bi bi-people"></i> @(memberCount + 1) membri
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <a asp-action="Details" asp-route-id="@project.Id" class="btn btn-primary btn-sm flex-grow-1">
+                                    <i class="bi bi-eye"></i> Vezi Proiect
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@project.Id" class="btn btn-ghost btn-sm" title="Editează" aria-label="Editează proiect">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-secondary">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-event"></i> Creat la @project.DateCreated.ToString("dd MMM yyyy")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

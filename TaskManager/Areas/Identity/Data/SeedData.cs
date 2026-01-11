@@ -38,14 +38,13 @@ public static class SeedData
                     NormalizedEmail = "ADMIN@TEST.COM",
                     Email = "admin@test.com",
                     NormalizedUserName = "ADMIN@TEST.COM",
-                    PasswordHash = hasher.HashPassword(null,"Admin1!")
+                    PasswordHash = hasher.HashPassword(new ApplicationUser(),"Admin1!")
                 },
                 new ApplicationUser
 
                 {
 
                     Id = "5b54ca8a-aba8-49bd-9a6e-503ae66fd5d1",
-                    // primary key
                     UserName = "member@test.com",
                     EmailConfirmed = true,
                     NormalizedEmail = "MEMBER@TEST.COM",
@@ -71,7 +70,21 @@ public static class SeedData
                 }
             );
 
-            // Seed Tasks - Atribuite utilizatorilor
+            // Seed Project
+            context.Projects.AddRange(
+                new Project
+                {
+                    Title = "Proiect Inițial",
+                    Description = "Acesta este proiectul de seed pentru task-urile inițiale.",
+                    CreatorId = "80cd74b1-da1e-48e7-a79a-cdd3cad6e7a8",
+                    DateCreated = DateTime.Now
+                }
+            );
+            context.SaveChanges();
+
+            var seedProject = context.Projects.FirstOrDefault(p => p.Title == "Proiect Inițial");
+            if (seedProject == null) return;
+
             context.ProjectTasks.AddRange(
                 new ProjectTask
                 {
@@ -80,7 +93,8 @@ public static class SeedData
                     Status = TaskManager.Models.TaskStatus.NotStarted,
                     StartDate = DateTime.Now,
                     EndDate = DateTime.Now.AddDays(5),
-                    AssignedUserId = "5b54ca8a-aba8-49bd-9a6e-503ae66fd5d1" // member@test.com
+                    AssignedUserId = "5b54ca8a-aba8-49bd-9a6e-503ae66fd5d1", // member@test.com
+                    ProjectId = seedProject.Id
                 },
                 new ProjectTask
                 {
@@ -90,7 +104,8 @@ public static class SeedData
                     StartDate = DateTime.Now.AddDays(-2),
                     EndDate = DateTime.Now.AddDays(3),
                     MediaUrl = "https://www.youtube.com/embed/PErrvYtVzbk",
-                    AssignedUserId = "5b54ca8a-aba8-49bd-9a6e-503ae66fd5d1" // member@test.com
+                    AssignedUserId = "5b54ca8a-aba8-49bd-9a6e-503ae66fd5d1",
+                    ProjectId = seedProject.Id
                 },
                 new ProjectTask
                 {
@@ -100,7 +115,8 @@ public static class SeedData
                     StartDate = DateTime.Now.AddDays(-10),
                     EndDate = DateTime.Now.AddDays(-5),
                     MediaUrl = "https://www.youtube.com/embed/9FjGP4t2zKY",
-                    AssignedUserId = "80cd74b1-da1e-48e7-a79a-cdd3cad6e7a8" // admin@test.com
+                    AssignedUserId = "80cd74b1-da1e-48e7-a79a-cdd3cad6e7a8",
+                    ProjectId = seedProject.Id
                 }
             );
                             

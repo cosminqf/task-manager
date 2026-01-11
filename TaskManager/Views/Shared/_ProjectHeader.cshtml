@@ -1,0 +1,63 @@
+@model TaskManager.Models.Project
+
+@{
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var isOrganizer = Model.CreatorId == currentUserId;
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<div class="card mb-lg">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-md">
+            <div class="flex-grow-1">
+                <h1 class="h2 mb-sm">@Model.Title</h1>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-person-circle"></i> Creat de <strong>@(Model.Creator?.UserName ?? "Unknown")</strong>
+                    <span class="mx-2">•</span>
+                    <i class="bi bi-calendar"></i> @Model.DateCreated.ToString("dd MMMM yyyy")
+                </p>
+            </div>
+            
+            @if (isOrganizer || isAdmin)
+            {
+                <div class="d-flex gap-2">
+                    <a asp-action="Edit" asp-controller="Projects" asp-route-id="@Model.Id" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-pencil"></i> Editează
+                    </a>
+                    <form asp-action="Delete" asp-controller="Projects" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Sigur doriți să ștergeți acest proiect?');">
+                            <i class="bi bi-trash"></i> Șterge
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+        
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <p class="mb-md">@Model.Description</p>
+        }
+        
+        @if (Model.Members != null && Model.Members.Any())
+        {
+            <div class="mt-md">
+                <strong class="text-muted d-block mb-sm">Echipă (@Model.Members.Count membri):</strong>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var member in Model.Members.Take(10))
+                    {
+                        <div class="chip">
+                            <span class="avatar avatar-sm">@(member.UserName?.Substring(0, 1).ToUpper() ?? "?")</span>
+                            @member.UserName
+                        </div>
+                    }
+                    @if (Model.Members.Count > 10)
+                    {
+                        <div class="chip">
+                            <i class="bi bi-three-dots"></i> +@(Model.Members.Count - 10)
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
