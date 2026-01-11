@@ -1,9 +1,11 @@
 @model TaskManager.Models.ProjectTask
 
-@{ ViewData["Title"] = "Task Nou"; }
+@{
+    ViewData["Title"] = "Task Nou";
+}
 
 <div class="container mt-5 mb-5">
-    
+
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show shadow fade-in-up" style="border-radius: 15px; border: none;">
@@ -18,9 +20,9 @@
                 <i class="bi bi-plus-circle"></i> Adaugă Task Nou
             </h2>
         </div>
-        
+
         <form asp-action="New" method="post" enctype="multipart/form-data">
-            
+
             <input type="hidden" asp-for="ProjectId" />
 
             <div class="mb-4">
@@ -79,7 +81,7 @@
                 <h5>
                     <i class="bi bi-camera"></i> Adaugă Media (opțional)
                 </h5>
-                
+
                 <ul class="nav nav-tabs mb-3" id="mediaTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="image-tab" data-bs-toggle="tab" data-bs-target="#image-content" type="button" role="tab">
@@ -127,5 +129,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
